@@ -20,7 +20,7 @@ const Login = () => {
     const handleLogin = (e) => {
         e.preventDefault();
 
-        axios.post(`${MAIN_API_URL}/auth/login`, loginCredentials)
+        axios.post(`${MAIN_API_URL}/api/login`, loginCredentials)
             .then((response) => {
                 console.log("Login successful:", response.data);
             })

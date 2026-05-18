@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Header from "./Header";
 
 const modules = [
   {
@@ -64,35 +65,9 @@ const Dashboard = () => {
   };
 
   return (
-    <body className="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+    <div className="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-slate-800 text-white flex items-center justify-between px-6 py-4 shadow">
-        <div className="flex items-center gap-4">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="w-12 h-12 rounded-full object-cover border-2 border-white"
-          />
-
-          <h1 className="text-xl font-semibold tracking-wide">
-            HR Dashboard
-          </h1>
-        </div>
-
-        <div className="text-sm flex items-center gap-2">
-          <span>
-            Welcome, {employeeName}
-          </span>
-
-          <span
-            onClick={logout}
-            className="text-red-300 hover:text-red-100 underline cursor-pointer"
-          >
-            Logout
-          </span>
-        </div>
-      </header>
-
+     <Header/>
       {/* Cards */}
       <main className="flex-grow flex justify-center items-start py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl w-full px-6">
@@ -115,7 +90,7 @@ const Dashboard = () => {
           ))}
         </div>
       </main>
-    </body>
+    </div>
   );
 };
 
