@@ -3,6 +3,7 @@ import Login from './pages/Login/LoginPage'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/HRDashboard/Dashboard'
 import Analytics from './pages/Analytics/Analytics'
+import EmployeeOnboarding from './pages/Onboarding/Onboarding'
 function App() {
   
   return (
@@ -14,7 +15,7 @@ function App() {
         
         <Route path="/hr-dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
-
+        <Route path="/onboarding" element={<EmployeeOnboarding />} />
       </Routes>
     </BrowserRouter>
     </>

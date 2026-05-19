@@ -31,6 +31,13 @@ const Login = () => {
 
     const handleResetPassword = () => {
         console.log("Password reset submitted");
+        axios.post(`${MAIN_API_URL}/api/reset-password`, resetCredentials)
+            .then((response) => {
+                console.log("Password reset successful:", response.data);
+            })
+            .catch((error) => {
+                console.error("Password reset error:", error);
+            });
 
     };
     const inputStyle = {
@@ -152,6 +159,9 @@ const Login = () => {
                         type="text"
                         placeholder="Username"
                         style={inputStyle}
+                        name="username"
+                        value={resetCredentials.username}
+                        onChange={onResetPasswordChange}
                     />
 
                     {/* Current Password */}
@@ -159,6 +169,9 @@ const Login = () => {
                         type="password"
                         placeholder="Current password"
                         style={inputStyle}
+                        name="current_password"
+                        value={resetCredentials.current_password}
+                        onChange={onResetPasswordChange}
                     />
 
                     {/* New Password */}
@@ -166,6 +179,9 @@ const Login = () => {
                         type="password"
                         placeholder="New password"
                         style={inputStyle}
+                        name="new_password"
+                        value={resetCredentials.new_password}
+                        onChange={onResetPasswordChange}
                     />
 
                     {/* Confirm Password */}
@@ -176,6 +192,9 @@ const Login = () => {
                             ...inputStyle,
                             marginBottom: "24px",
                         }}
+                            name="confirm_password"
+                            value={resetCredentials.confirm_password}
+                            onChange={onResetPasswordChange}
                     />
 
                     {/* Buttons */}
@@ -198,6 +217,7 @@ const Login = () => {
                                 fontWeight: "500",
                                 cursor: "pointer",
                             }}
+                            onClick={handleResetPassword}
                         >
                             Update Password
                         </button>
