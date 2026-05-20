@@ -4,6 +4,11 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/HRDashboard/Dashboard'
 import Analytics from './pages/Analytics/Analytics'
 import EmployeeOnboarding from './pages/Onboarding/Onboarding'
+import Reimbursements from './pages/Reimbursements/Reimbursements'
+import ApplicationForm from './pages/Apply/ApplicationForm'
+import Attendance from './pages/Attendance/Attendance'
+import Jobview from './pages/JobView/Jobview'
+import RecruitmentDashboard from './Recruitment/RecruitmentDashboard'
 function App() {
   
   return (
@@ -16,6 +21,11 @@ function App() {
         <Route path="/hr-dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/onboarding" element={<EmployeeOnboarding />} />
+        <Route path="/reimbursements" element={<Reimbursements />} />
+        <Route path="/apply" element={<ApplicationForm />} />
+        <Route path="/attendance" element={<Attendance />} />
+        <Route path="/job-view" element={<Jobview />} />
+        <Route path="/recruitment" element={<RecruitmentDashboard />} />
       </Routes>
     </BrowserRouter>
     </>
