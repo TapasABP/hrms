@@ -4,6 +4,7 @@ import logo from "../../assets/images/logo.png";
 import axios from "axios";
 import { MAIN_API_URL } from "../../constants/global-variables";
 import styles from "../../assets/css/login.module.css";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [showReset, setShowReset] = useState(false);
@@ -17,12 +18,17 @@ const Login = () => {
         const { name, value } = e.target;
         setResetCredentials((prev) => ({ ...prev, [name]: value }));
     };
+    const navigate = useNavigate()
     const handleLogin = (e) => {
         e.preventDefault();
 
-        axios.post(`${MAIN_API_URL}/api/login`, loginCredentials)
+        axios.post(`${MAIN_API_URL}/login`, {email : loginCredentials.username , password : loginCredentials.password})
             .then((response) => {
                 console.log("Login successful:", response.data);
+                if(response.data.status){
+                    localStorage.setItem("userData", JSON.stringify(response.data));
+                    navigate("/hr-dashboard");
+                }
             })
             .catch((error) => {
                 console.error("Login error:", error);

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Login from './pages/Login/LoginPage'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/HRDashboard/Dashboard'
@@ -11,6 +11,12 @@ import Jobview from './pages/JobView/Jobview'
 import RecruitmentDashboard from './Recruitment/RecruitmentDashboard'
 function App() {
   
+  let path = window.location.pathname.slice(1);
+  useEffect(()=>{
+     
+     document.title = path ? `${path} - HRMS` : "HRMS"; 
+
+  },[path])
   return (
     <>
       <BrowserRouter>

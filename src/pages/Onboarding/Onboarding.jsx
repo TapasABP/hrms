@@ -5,10 +5,15 @@ import {
     Upload,
     Pencil,
 } from "lucide-react";
+import axios from "axios";
+import { MAIN_API_URL } from "../../constants/global-variables";
 
 const EmployeeOnboarding = () => {
     const navigate = useNavigate();
-
+    const userData = JSON.parse(
+        localStorage.getItem("userData")
+    );
+    const token = userData?.token;
     // ==========================
     // STATES
     // ==========================
@@ -53,39 +58,41 @@ const EmployeeOnboarding = () => {
     // FETCH EMPLOYEES
     // ==========================
 
-    const fetchEmployeesFromAPI =
-        async () => {
-            try {
-                const userData = JSON.parse(
-                    localStorage.getItem(
-                        "ZeroUserData"
-                    )
-                );
-
-                const org_id =
-                    userData?.user?.org_id;
-
-                const res = await fetch(
-                    `http://localhost:3000/api/fetch_employees?org_id=${org_id}`
-                );
-
-                const data = await res.json();
-
-                if (data?.data) {
-                    setAllEmployees(data.data);
-
-                    localStorage.setItem(
-                        "employeeData",
-                        JSON.stringify(data.data)
-                    );
+    const fetchEmployeesFromAPI = () => {
+        
+        let org_id = userData?.user?.org_id;
+        axios
+            .get(
+                `${MAIN_API_URL}/fetch-employees-org-id/${org_id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            } catch (err) {
+            )
+            .then((response) => {
+                console.log(
+                    "Employees fetched:",
+                    response.data.data
+                );
+                // const data =
+                //     response?.data;
+
+                if (response.data.data) {
+                    setAllEmployees(
+                        response.data.data
+                    );
+
+                    
+                }
+            })
+            .catch((err) => {
                 console.error(
                     "Failed to fetch employees:",
                     err
                 );
-            }
-        };
+            });
+    };
 
     useEffect(() => {
         fetchEmployeesFromAPI();
@@ -194,74 +201,55 @@ const EmployeeOnboarding = () => {
     // ADD EMPLOYEE
     // ==========================
 
-    const handleAddEmployee =
-        async (e) => {
-            e.preventDefault();
+    const handleAddEmployee = (e) => {
+        e.preventDefault();
 
-            try {
-                const userData =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "ZeroUserData"
-                        )
-                    );
 
-                const org_id =
-                    userData?.user?.org_id;
-
-                if (!org_id) {
-                    alert(
-                        "Org ID missing"
-                    );
-                    return;
+        const payload = {
+            "org_id": userData.user.org_id,
+            "name": employeeForm.fullname,
+            "user_type": userData.user.user_type.toString(),
+            "email": employeeForm.username,
+            "password": employeeForm.password,
+            "emp_code": employeeForm.emp_code,
+            "position": employeeForm.position,
+            "department": employeeForm.department,
+            
+        }
+       console.log("Adding employee with payload:", payload);
+        axios
+            .post(
+                `${MAIN_API_URL}/add-employee`,
+                payload,
+                {
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                            Authorization: `Bearer ${token}`
+                    },
                 }
-
-                const payload = {
-                    org_id,
-                    ...employeeForm,
-                    user_type: 2,
-                };
-
-                const res =
-                    await fetch(
-                        "http://localhost:3000/api/add_employee",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
-                            },
-                            body: JSON.stringify(
-                                payload
-                            ),
-                        }
-                    );
-
-                const data =
-                    await res.json();
-
-                if (!res.ok) {
-                    alert(
-                        data.error ||
-                        "Error adding employee"
-                    );
-                    return;
-                }
-
-                alert(
-                    "Employee added successfully"
+            )
+            .then((response) => {
+                console.log(
+                    response.data
                 );
+
+               
 
                 closeAddModal();
 
                 fetchEmployeesFromAPI();
-            } catch (err) {
+            })
+            .catch((err) => {
                 console.error(err);
+
                 alert(
+                    err?.response?.data
+                        ?.error ||
                     "Failed to add employee"
                 );
-            }
-        };
+            });
+    };
 
     // ==========================
     // BULK UPLOAD
