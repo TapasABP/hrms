@@ -7,8 +7,11 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { MAIN_API_URL } from "../../constants/global-variables";
+import { DEPARTMENTS, DESIGNATIONS } from "../../contstants/application";
 
 const EmployeeOnboarding = () => {
+    const [managerOptions, setManagerOptions] = useState([]);
+    console.log("Manager options for dropdown:", managerOptions);
     const navigate = useNavigate();
     const userData = JSON.parse(
         localStorage.getItem("userData")
@@ -59,7 +62,7 @@ const EmployeeOnboarding = () => {
     // ==========================
 
     const fetchEmployeesFromAPI = () => {
-        
+
         let org_id = userData?.user?.org_id;
         axios
             .get(
@@ -79,11 +82,20 @@ const EmployeeOnboarding = () => {
                 //     response?.data;
 
                 if (response.data.data) {
+                    let options = [];
+
+                    response.data.data.forEach((emp) => {
+                        options.push({
+                            id: emp.id,
+                            value: emp.fullname
+                        });
+                    });
+                    setManagerOptions(options);
                     setAllEmployees(
                         response.data.data
                     );
 
-                    
+
                 }
             })
             .catch((err) => {
@@ -197,6 +209,17 @@ const EmployeeOnboarding = () => {
         }));
     };
 
+    const [selectedValue, setSelectedValue] = useState("");
+
+    // 3. Create the onChange handler function
+    const handleDropdownChange = (event) => {
+        const selectedId = event.target.value;
+        setSelectedValue(selectedId);
+
+        // Optional: Do something with the selected value
+        console.log("Selected Element ID:", selectedId);
+    };
+
     // ==========================
     // ADD EMPLOYEE
     // ==========================
@@ -204,19 +227,30 @@ const EmployeeOnboarding = () => {
     const handleAddEmployee = (e) => {
         e.preventDefault();
 
-
+        // {
+        //     "org_id": 1,
+        //         "name": "Sanjukta",
+        //             "user_type": "2",
+        //                 "email": "sanjukta@yopmail.com",
+        //                     "password": "123456",
+        //                         "emp_code": "EMP008",
+        //                             "position": "Software Engineer",
+        //                                 "department": "1000002",
+        //                                     "manager_id": 14
+        // }
         const payload = {
+            "manager_id": selectedValue, // This is the manager_id
             "org_id": userData.user.org_id,
             "name": employeeForm.fullname,
             "user_type": userData.user.user_type.toString(),
             "email": employeeForm.username,
             "password": employeeForm.password,
-            "emp_code": employeeForm.emp_code,
+            // "emp_code": employeeForm.emp_code,
             "position": employeeForm.position,
             "department": employeeForm.department,
-            
+
         }
-       console.log("Adding employee with payload:", payload);
+        console.log("Adding employee with payload:", payload);
         axios
             .post(
                 `${MAIN_API_URL}/add-employee`,
@@ -225,7 +259,7 @@ const EmployeeOnboarding = () => {
                     headers: {
                         "Content-Type":
                             "application/json",
-                            Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`
                     },
                 }
             )
@@ -234,7 +268,7 @@ const EmployeeOnboarding = () => {
                     response.data
                 );
 
-               
+
 
                 closeAddModal();
 
@@ -349,17 +383,10 @@ const EmployeeOnboarding = () => {
     const editEmployee = (
         employee
     ) => {
-        localStorage.setItem(
-            "SelectedEmployee",
-            JSON.stringify(employee)
-        );
-
-        const idToUse =
-            employee.user_id ||
-            employee.id;
+        
 
         navigate(
-            `/view_employee?id=${idToUse}`
+            `/view-employee?email=${employee.email}`
         );
     };
 
@@ -511,13 +538,15 @@ const EmployeeOnboarding = () => {
                                         </td>
 
                                         <td className="border px-4 py-2">
-                                            {emp.department ||
-                                                "N/A"}
+                                            {DEPARTMENTS.find(
+                                                (dept) => dept.id == emp.department
+                                            )?.value || "N/A"}
                                         </td>
 
                                         <td className="border px-4 py-2">
-                                            {emp.position ||
-                                                "N/A"}
+                                            {DESIGNATIONS.find(
+                                                (role) => role.id == emp.position
+                                            )?.value || "N/A"}
                                         </td>
 
                                         <td className="border px-4 py-2">
@@ -556,6 +585,25 @@ const EmployeeOnboarding = () => {
                                 handleAddEmployee
                             }
                         >
+
+
+
+                            <select
+                                id="dynamicSelect"
+                                value={selectedValue}
+                                onChange={handleDropdownChange}
+                                className="w-full mb-3 px-4 py-2 border rounded"
+                            >
+                                {/* Default placeholder option */}
+                                <option value="">Choose a manager</option>
+
+                                {/* 4. Map over the array to generate dynamic <option> elements */}
+                                {managerOptions?.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.value}
+                                    </option>
+                                ))}
+                            </select>
                             <input
                                 type="text"
                                 name="fullname"
@@ -570,7 +618,7 @@ const EmployeeOnboarding = () => {
                                 required
                             />
 
-                            <input
+                            {/* <input
                                 type="text"
                                 name="emp_code"
                                 placeholder="Employee ID"
@@ -582,35 +630,37 @@ const EmployeeOnboarding = () => {
                                 }
                                 className="w-full mb-3 px-4 py-2 border rounded"
                                 required
-                            />
+                            /> */}
 
-                            <input
-                                type="text"
+                            <select
                                 name="department"
-                                placeholder="Department"
-                                value={
-                                    employeeForm.department
-                                }
-                                onChange={
-                                    handleInputChange
-                                }
-                                className="w-full mb-3 px-4 py-2 border rounded"
+                                value={employeeForm.department}
+                                onChange={handleInputChange}
+                                className="w-full mb-3 px-4 py-2 border rounded bg-white text-gray-800"
                                 required
-                            />
+                            >
+                                <option value="" disabled>Select Department</option>
+                                {DEPARTMENTS.map((dept) => (
+                                    <option key={dept.id} value={dept.id} >
+                                        {dept.value}
+                                    </option>
+                                ))}
+                            </select>
 
-                            <input
-                                type="text"
+                            <select
                                 name="position"
-                                placeholder="Designation"
-                                value={
-                                    employeeForm.position
-                                }
-                                onChange={
-                                    handleInputChange
-                                }
-                                className="w-full mb-3 px-4 py-2 border rounded"
+                                value={employeeForm.position}
+                                onChange={handleInputChange}
+                                className="w-full mb-3 px-4 py-2 border rounded bg-white text-gray-800"
                                 required
-                            />
+                            >
+                                <option value="" disabled>Select Designation</option>
+                                {DESIGNATIONS.map((role) => (
+                                    <option key={role.id} value={role.id}>
+                                        {role.value}
+                                    </option>
+                                ))}
+                            </select>
 
                             <input
                                 type="text"

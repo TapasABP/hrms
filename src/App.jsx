@@ -9,6 +9,8 @@ import ApplicationForm from './pages/Apply/ApplicationForm'
 import Attendance from './pages/Attendance/Attendance'
 import Jobview from './pages/JobView/Jobview'
 import RecruitmentDashboard from './Recruitment/RecruitmentDashboard'
+import ViewEmployee from './pages/ViewEmployee/ViewEmployee'
+import EmployeeDashboard from './EmployeeDashboard/EmployeeDashboard'
 function App() {
   
   let path = window.location.pathname.slice(1);
@@ -32,6 +34,8 @@ function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/job-view" element={<Jobview />} />
         <Route path="/recruitment" element={<RecruitmentDashboard />} />
+        <Route path="/view-employee" element={<ViewEmployee />} />
+        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
       </Routes>
     </BrowserRouter>
     </>
