@@ -1,8 +1,11 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { MAIN_API_URL } from "../constants/global-variables";
 
 const EmployeeDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
-
+  const userloginData = JSON.parse(localStorage.getItem("userData"));
+  const token = userloginData?.token;
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("");
 
@@ -15,7 +18,7 @@ const EmployeeDashboard = () => {
     sl: 3,
     el: 10,
   });
-
+ const [teammembers,setTeammembers] = useState([])
   const [formData, setFormData] = useState({
     leave_type: "",
     duration: "",
@@ -37,7 +40,35 @@ const EmployeeDashboard = () => {
 
     setUserData(storedUser);
   }, []);
-
+useEffect(()=>{
+ if(activeTab === "team") {
+   axios
+        .post(
+          `${MAIN_API_URL}/manager/employees`,
+          { email: userloginData?.user?.email },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((response) => {
+          console.log("Employee details response:", response);
+          if (response.data) {
+            
+            setTeammembers(response.data.employees)
+           console.log(data.department, "Department value from API");
+            
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching employee data:", err);
+          
+        })
+ }
+        
+},[activeTab])
   // ============================
   // HANDLERS
   // ============================
@@ -338,9 +369,9 @@ const EmployeeDashboard = () => {
             </h2>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((member) => (
+              {teammembers?.map((member) => (
                 <div
-                  key={member}
+                  key={member.id}
                   className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all"
                 >
                   <div className="flex flex-col items-center text-center">
@@ -351,11 +382,11 @@ const EmployeeDashboard = () => {
                     />
 
                     <h3 className="font-bold text-lg">
-                      Team Member {member}
+                        {member.fullname}
                     </h3>
 
                     <p className="text-slate-500">
-                      Frontend Developer
+                      {member.position}
                     </p>
                   </div>
                 </div>

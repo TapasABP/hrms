@@ -2,18 +2,26 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
+import axios from "axios";
+
 import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
+import { MAIN_API_URL } from "../../constants/global-variables";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
+const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+ const token = userData?.token;
   const [searchParams] =
     useSearchParams();
 
   const job_id =
     searchParams.get("job_id");
+  const job_title =
+    searchParams.get("job_title");
 
   // ==========================
   // STATES
@@ -66,44 +74,33 @@ const ApplicationForm = () => {
   // LOAD JOB DETAILS
   // ==========================
 
-  const loadJobDetails =
-    async () => {
-      try {
-        setLoading(true);
+  // const loadJobDetails =
+  //   () => {
+  //     setLoading(true);
 
-        const res =
-          await fetch(
-            `http://localhost:3000/api/job-postings/${job_id}`
-          );
+  //     axios
+  //       .get(
+  //         `${MAIN_API_URL}/job-apply`
+  //       )
+  //       .then((res) => {
+  //         setJob(res.data);
+  //       })
+  //       .catch((err) => {
+  //         console.error(
+  //           "Error loading job:",
+  //           err
+  //         );
+  //       })
+  //       .finally(() => {
+  //         setLoading(false);
+  //       });
+  //   };
 
-        if (!res.ok)
-          throw new Error(
-            "Failed to fetch"
-          );
+  // useEffect(() => {
+  //   if (!job_id) return;
 
-        const data =
-          await res.json();
-
-        setJob(data);
-      } catch (err) {
-        console.error(
-          "Error loading job:",
-          err
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-  useEffect(() => {
-    if (!job_id) {
-    //   alert("Missing Job ID");
-    //   navigate("/jobs");
-      return;
-    }
-
-    loadJobDetails();
-  }, [job_id]);
+  //   loadJobDetails();
+  // }, [job_id]);
 
   // ==========================
   // INPUT CHANGE
@@ -139,7 +136,7 @@ const ApplicationForm = () => {
   // ==========================
 
   const handleSubmit =
-    async (e) => {
+    (e) => {
       e.preventDefault();
 
       if (!resumeFile) {
@@ -149,44 +146,94 @@ const ApplicationForm = () => {
         return;
       }
 
-      try {
-        const submitData =
-          new FormData();
+      // ==========================
+      // FORM DATA PAYLOAD
+      // ==========================
 
-        submitData.append(
-          "resume",
-          resumeFile
-        );
+      const payload =
+        new FormData();
 
-        submitData.append(
-          "job_id",
-          job_id
-        );
+      payload.append(
+        "job_id",
+        job_id
+      );
 
-        Object.entries(
-          formData
-        ).forEach(
-          ([key, value]) => {
-            submitData.append(
-              key,
-              value
-            );
+      payload.append(
+        "full_name",
+        formData.full_name
+      );
+
+      payload.append(
+        "email",
+        formData.email
+      );
+
+      payload.append(
+        "phone",
+        formData.phone
+      );
+
+      payload.append(
+        "current_location",
+        formData.current_location
+      );
+
+      payload.append(
+        "current_company",
+        formData.current_company
+      );
+
+      payload.append(
+        "linkedin",
+        formData.linkedin
+      );
+
+      payload.append(
+        "portfolio",
+        formData.portfolio
+      );
+
+      payload.append(
+        "cover_letter",
+        formData.cover_letter
+      );
+
+      payload.append(
+        "additional_info",
+        formData.additional_info
+      );
+
+      payload.append(
+        "resume",
+        resumeFile
+      );
+
+      // ==========================
+      // API CALL
+      // ==========================
+
+      axios
+        .post(
+          `${MAIN_API_URL}/job-apply`,
+          payload,
+          {
+            headers: {
+              "Content-Type":
+                "multipart/form-data",
+
+                Authorization: `Bearer ${token}`
+            },
           }
-        );
-
-        const res =
-          await fetch(
-            "http://localhost:3000/api/apply",
-            {
-              method: "POST",
-              body: submitData,
-            }
+        )
+        .then((res) => {
+          console.log(
+            "Application Submitted:",
+            res.data
           );
 
-        if (res.ok) {
           showSuccessPopup();
 
-          // Reset form
+          // RESET FORM
           setFormData({
             full_name: "",
             email: "",
@@ -206,31 +253,31 @@ const ApplicationForm = () => {
           setResumeFile(
             null
           );
-        } else {
-          alert(
-            "❌ Failed to apply. Try again."
+        })
+        .catch((err) => {
+          console.error(
+            "Application Error:",
+            err
           );
-        }
-      } catch (err) {
-        console.error(err);
-        alert(
-          "Something went wrong."
-        );
-      }
+
+          alert(
+            err?.response?.data
+              ?.message ||
+              "Failed to submit application."
+          );
+        });
     };
 
   return (
-    <div className="bg-slate-100 text-slate-800 min-h-screen py-10 px-4">
+    <div className="bg-slate-100 min-h-screen py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-md">
-        {/* Job Title */}
+
+        {/* JOB TITLE */}
         <div className="text-2xl font-semibold mb-1">
-          {loading
-            ? "Loading role..."
-            : job?.title ||
-              "Role details unavailable"}
+          {job_title || "Loading Job..."}
         </div>
 
-        {/* Job Meta */}
+        {/* JOB META */}
         <div className="text-sm text-slate-500 mb-6">
           {!loading &&
             job && (
@@ -258,14 +305,15 @@ const ApplicationForm = () => {
             )}
         </div>
 
-        {/* Form */}
+        {/* FORM */}
         <form
           onSubmit={
             handleSubmit
           }
           className="space-y-5"
         >
-          {/* Full Name */}
+
+          {/* FULL NAME */}
           <div>
             <label className="block font-medium">
               Full Name
@@ -281,11 +329,11 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Email */}
+          {/* EMAIL */}
           <div>
             <label className="block font-medium">
               Email
@@ -301,11 +349,11 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Phone */}
+          {/* PHONE */}
           <div>
             <label className="block font-medium">
               Phone Number
@@ -321,15 +369,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Current Location */}
+          {/* CURRENT LOCATION */}
           <div>
             <label className="block font-medium">
-              Current
-              Location
+              Current Location
             </label>
 
             <input
@@ -342,15 +389,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Company */}
+          {/* CURRENT COMPANY */}
           <div>
             <label className="block font-medium">
-              Current
-              Company
+              Current Company
             </label>
 
             <input
@@ -363,16 +409,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Linkedin */}
+          {/* LINKEDIN */}
           <div>
             <label className="block font-medium">
               LinkedIn
-              Profile
-              (optional)
             </label>
 
             <input
@@ -384,16 +428,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Portfolio */}
+          {/* PORTFOLIO */}
           <div>
             <label className="block font-medium">
-              Portfolio /
-              Website
-              (optional)
+              Portfolio
             </label>
 
             <input
@@ -405,16 +447,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Cover Letter */}
+          {/* COVER LETTER */}
           <div>
             <label className="block font-medium">
-              Why do you
-              want to
-              join us?
+              Cover Letter
             </label>
 
             <textarea
@@ -427,16 +467,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50 resize-y"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Additional Info */}
+          {/* ADDITIONAL INFO */}
           <div>
             <label className="block font-medium">
-              Additional
-              Information
-              (optional)
+              Additional Information
             </label>
 
             <textarea
@@ -448,16 +486,14 @@ const ApplicationForm = () => {
               onChange={
                 handleChange
               }
-              className="w-full mt-1 px-4 py-2 border border-slate-300 rounded-md bg-slate-50 resize-y"
+              className="w-full mt-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
             />
           </div>
 
-          {/* Resume */}
+          {/* RESUME */}
           <div>
             <label className="block font-medium">
-              Upload
-              Resume
-              (PDF/DOC)
+              Upload Resume
             </label>
 
             <input
@@ -474,42 +510,34 @@ const ApplicationForm = () => {
             />
           </div>
 
-          {/* Submit */}
+          {/* SUBMIT */}
           <button
             type="submit"
-            className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition-all font-medium"
           >
-            Submit
-            application →
+            Submit Application →
           </button>
         </form>
       </div>
 
-      {/* Success Popup */}
+      {/* SUCCESS POPUP */}
       {showPopup && (
         <>
-          <div className="fixed top-0 left-0 w-full h-full bg-black/40 z-40" />
+          <div className="fixed inset-0 bg-black/40 z-40" />
 
-          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg text-center z-50">
-            <div className="text-4xl mb-2">
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-2xl shadow-2xl text-center z-50 max-w-md">
+            <div className="text-5xl mb-3">
               🎉
             </div>
 
-            <h3 className="text-xl font-semibold">
-              Application
-              submitted!
+            <h3 className="text-2xl font-bold text-gray-800">
+              Application Submitted!
             </h3>
 
-            <p className="text-sm text-slate-600 mt-2">
-              Thank you
-              for
-              applying.
-              Our HR
-              team will
-              get back
-              to you if
-              you are
-              shortlisted.
+            <p className="text-gray-500 mt-3">
+              Thank you for applying.
+              Our HR team will contact
+              you if shortlisted.
             </p>
           </div>
         </>

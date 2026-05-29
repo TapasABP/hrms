@@ -11,6 +11,7 @@ import Jobview from './pages/JobView/Jobview'
 import RecruitmentDashboard from './Recruitment/RecruitmentDashboard'
 import ViewEmployee from './pages/ViewEmployee/ViewEmployee'
 import EmployeeDashboard from './EmployeeDashboard/EmployeeDashboard'
+import Leave from './Leave/Leave'
 function App() {
   
   let path = window.location.pathname.slice(1);
@@ -32,10 +33,11 @@ function App() {
         <Route path="/reimbursements" element={<Reimbursements />} />
         <Route path="/apply" element={<ApplicationForm />} />
         <Route path="/attendance" element={<Attendance />} />
-        <Route path="/job-view" element={<Jobview />} />
+        <Route path="/job-view/:id" element={<Jobview />} />
         <Route path="/recruitment" element={<RecruitmentDashboard />} />
         <Route path="/view-employee" element={<ViewEmployee />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+        <Route path="/leave-history" element={<Leave />} />
       </Routes>
     </BrowserRouter>
     </>

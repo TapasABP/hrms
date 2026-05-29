@@ -2,33 +2,36 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
+import axios from "axios";
+
 import {
   Link,
-  useNavigate,
-  useSearchParams,
+  useParams,
 } from "react-router-dom";
+import { MAIN_API_URL } from "../../constants/global-variables";
 
 const Jobview = () => {
-  const navigate =
-    useNavigate();
 
-  const [searchParams] =
-    useSearchParams();
+  // ==========================
+  // ROUTE PARAMS
+  // ==========================
 
-  const jobId =
-    searchParams.get(
-      "id"
-    );
+  const { id } =
+    useParams();
 
   // ==========================
   // STATES
   // ==========================
+ const userData = JSON.parse(localStorage.getItem("userData") || "{}");
 
+//  const navigate = useNavigate()
+  const token = userData?.token;
   const [job, setJob] =
     useState(null);
 
   const [loading, setLoading] =
-    useState(false);
+    useState(true);
 
   const [error, setError] =
     useState("");
@@ -38,189 +41,308 @@ const Jobview = () => {
   // ==========================
 
   const fetchJobDetails =
-    async () => {
-      try {
-        setLoading(true);
+    () => {
 
-        const res =
-          await fetch(
-            `http://localhost:3000/api/job-postings/${jobId}`
+      setLoading(true);
+
+      axios
+        .get(
+          `${MAIN_API_URL}/job-postings/${id}`,
+          {
+            headers: {
+              "Content-Type":
+                "application/json",
+                Authorization : `Bearer ${token}`
+            },
+          }
+        )
+        .then((res) => {
+
+          setJob(
+            res.data
           );
 
-        if (!res.ok) {
-          throw new Error(
-            "Job not found"
+          setError("");
+
+        })
+        .catch((err) => {
+
+          console.error(
+            "Job fetch error:",
+            err
           );
-        }
 
-        const data =
-          await res.json();
+          setError(
+            "Job not found."
+          );
 
-        setJob(data);
-      } catch (err) {
-        console.error(
-          err
-        );
+        })
+        .finally(() => {
 
-        setError(
-          "Job not found."
-        );
-      } finally {
-        setLoading(false);
-      }
+          setLoading(false);
+
+        });
     };
 
   // ==========================
   // INITIAL LOAD
   // ==========================
 
-  // useEffect(() => {
-  //   if (!jobId) {
-  //     setError(
-  //       "Invalid job link."
-  //     );
-  //     return;
-  //   }
+  useEffect(() => {
 
-  //   fetchJobDetails();
-  // }, [jobId]);
+    if (!id) {
+
+      setError(
+        "Invalid Job ID"
+      );
+
+      setLoading(false);
+
+      return;
+    }
+
+    fetchJobDetails();
+
+  }, [id]);
 
   // ==========================
   // FORMAT SALARY
   // ==========================
 
-  const formatLakh = (
+  const formatSalary = (
     amount
   ) => {
+
     if (!amount)
-      return "";
-
-    return `INR ${(
-      amount / 100000
-    ).toFixed(
-      1
-    )} lakh`;
-  };
-
-  // ==========================
-  // SECTION UI
-  // ==========================
-
-  const renderSection = (
-    title,
-    content
-  ) => {
-    if (!content)
-      return null;
+      return "₹0";
 
     return (
-      <div className="mb-6">
-        <h3 className="text-blue-600 font-semibold mb-1">
-          {title}
-        </h3>
-
-        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-          {content}
-        </p>
-      </div>
+      "₹" +
+      amount.toLocaleString(
+        "en-IN"
+      )
     );
   };
 
   // ==========================
-  // LOADING STATE
+  // LOADING UI
   // ==========================
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-600">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-slate-100">
+        <p className="text-slate-600 text-lg">
+          Loading Job Details...
+        </p>
       </div>
     );
   }
 
   // ==========================
-  // ERROR STATE
+  // ERROR UI
   // ==========================
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 text-lg">
+      <div className="min-h-screen flex items-center justify-center bg-slate-100">
+        <p className="text-red-600 text-lg font-medium">
           {error}
         </p>
       </div>
     );
   }
 
-  return (
-    <div className="bg-gray-100 text-slate-800 min-h-screen py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-md">
-        {/* Job Title */}
-        <h1 className="text-2xl font-semibold mb-1">
-          {job?.title}
-        </h1>
+  // ==========================
+  // MAIN UI
+  // ==========================
 
-        {/* Meta */}
-        <div className="text-sm text-slate-500 mb-6">
-          {
-            job?.location
-          }{" "}
-          •{" "}
-          {
-            job?.work_type
-          }{" "}
-          (
-          {
-            job?.job_mode
-          }
-          ) •{" "}
-          {formatLakh(
-            job?.salary_min
-          )}{" "}
-          -{" "}
-          {formatLakh(
-            job?.salary_max
-          )}
+  return (
+    <div className="bg-slate-100 min-h-screen py-10 px-4">
+
+      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
+
+        {/* HEADER */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
+
+          <h1 className="text-3xl font-bold">
+            {job?.title}
+          </h1>
+
+          <div className="mt-3 flex flex-wrap gap-3 text-sm">
+
+            <span className="bg-white/20 px-3 py-1 rounded-full">
+              📍 {job?.location}
+            </span>
+
+            <span className="bg-white/20 px-3 py-1 rounded-full">
+              💼 {job?.work_type}
+            </span>
+
+            <span className="bg-white/20 px-3 py-1 rounded-full">
+              🏢 {job?.job_mode}
+            </span>
+
+            <span className="bg-white/20 px-3 py-1 rounded-full">
+              👥 {job?.applications} Applications
+            </span>
+
+          </div>
+
+          <div className="mt-5 text-2xl font-semibold">
+            {formatSalary(
+              job?.salary_min
+            )}{" "}
+            -{" "}
+            {formatSalary(
+              job?.salary_max
+            )}
+          </div>
+
         </div>
 
-        {/* Sections */}
-        {renderSection(
-          "Job Summary",
-          job?.job_summary
-        )}
+        {/* CONTENT */}
+        <div className="p-8 space-y-8">
 
-        {renderSection(
-          "Key Responsibilities",
-          job?.responsibilities
-        )}
+          {/* JOB SUMMARY */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              Job Summary
+            </h2>
 
-        {renderSection(
-          "Skills & Attributes for Success",
-          job?.skills
-        )}
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.job_summary
+              }
+            </p>
+          </div>
 
-        {renderSection(
-          "Preferred Education & Experience",
-          job?.education_experience
-        )}
+          {/* RESPONSIBILITIES */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              Key Responsibilities
+            </h2>
 
-        {renderSection(
-          "About the Team",
-          job?.about_team
-        )}
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.responsibilities
+              }
+            </p>
+          </div>
 
-        {renderSection(
-          "About Us",
-          job?.about_us
-        )}
+          {/* SKILLS */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              Skills & Requirements
+            </h2>
 
-        {/* Apply Button */}
-        <Link
-          to={`/apply-job?job_id=${job?.id}`}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg text-sm font-medium transition"
-        >
-          Apply Now →
-        </Link>
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.skills
+              }
+            </p>
+          </div>
+
+          {/* EDUCATION */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              Education & Experience
+            </h2>
+
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.education_experience
+              }
+            </p>
+          </div>
+
+          {/* TEAM */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              About the Team
+            </h2>
+
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.about_team
+              }
+            </p>
+          </div>
+
+          {/* REPORTING */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              Reporting To
+            </h2>
+
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.reporting_to
+              }
+            </p>
+          </div>
+
+          {/* ABOUT US */}
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              About Us
+            </h2>
+
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {
+                job?.about_us
+              }
+            </p>
+          </div>
+
+          {/* EXTRA INFO */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <p className="text-sm text-slate-500 mb-1">
+                Department
+              </p>
+
+              <h3 className="font-semibold text-slate-800">
+                {
+                  job?.department
+                }
+              </h3>
+            </div>
+
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <p className="text-sm text-slate-500 mb-1">
+                Posted On
+              </p>
+
+              <h3 className="font-semibold text-slate-800">
+                {new Date(
+                  job?.created_at
+                ).toLocaleDateString(
+                  "en-IN",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
+              </h3>
+            </div>
+
+          </div>
+
+          {/* APPLY BUTTON */}
+          <div className="pt-4">
+
+            <Link
+              to={`/apply-job?job_id=${job?.id}`}
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg"
+            >
+              Apply Now →
+            </Link>
+
+          </div>
+
+        </div>
       </div>
     </div>
   );
