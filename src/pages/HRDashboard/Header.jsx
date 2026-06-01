@@ -1,6 +1,12 @@
 import React from 'react'
 import logo from "../../assets/images/logo.png";
+import { useNavigate } from 'react-router-dom';
 const Header = () => {
+  const navigate = useNavigate();
+  const logout = ()=>{
+    localStorage.removeItem("userData");
+    navigate("/login");
+  }
   return (
      <header className="bg-slate-800 text-white flex items-center justify-between px-6 py-4 shadow">
         <div className="flex items-center gap-4">
@@ -21,7 +27,7 @@ const Header = () => {
           </span>
 
           <span
-            // onClick={logout}
+            onClick={logout}
             className="text-red-300 hover:text-red-100 underline cursor-pointer"
           >
             Logout

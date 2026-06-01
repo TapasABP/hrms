@@ -1,4 +1,5 @@
 import React, {
+  use,
   useEffect,
   useState,
 } from "react";
@@ -11,6 +12,7 @@ import {
   Receipt,
   BarChart3,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const modules = [
   {
@@ -52,7 +54,7 @@ const Dashboard = () => {
     employeeName,
     setEmployeeName,
   ] = useState("User");
-
+ const navigate = useNavigate();
   useEffect(() => {
     const data =
       JSON.parse(
@@ -74,28 +76,9 @@ const Dashboard = () => {
   const openModule = (
     page
   ) => {
-    const data =
-      JSON.parse(
-        localStorage.getItem(
-          "ZeroUserData"
-        ) || "{}"
-      );
-
-    if (
-      !data?.user
-        ?.username ||
-      !data?.user?.org_id
-    ) {
-      alert(
-        "Please login again."
-      );
-      window.location.href =
-        "/";
-      return;
-    }
-
-    window.location.href =
-      page;
+    
+    
+   navigate(page);
   };
 
   const logout = () => {

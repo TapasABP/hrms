@@ -54,3 +54,9 @@ export const LEAVEDURATION = [
   { id: 6000002, value: "Half Day" },
   
 ];
+
+export const LEAVEAPPLYSTATUS = [
+  { id: 7000001, value: "Pending" },
+  { id: 7000002, value: "Approved" },
+  { id: 7000003, value: "Rejected" },
+];

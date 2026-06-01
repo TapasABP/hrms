@@ -119,7 +119,7 @@ function RecruitmentMain({ activeTab }) {
           if (response.data) {
 
             setJoblisting(response.data)
-            console.log(data.department, "Department value from API");
+            // console.log(data.department, "Department value from API");
 
           }
         })
@@ -521,7 +521,7 @@ function RecruitmentMain({ activeTab }) {
 
                         {/* DEPARTMENT */}
                         <td className="px-6 py-5 text-gray-600">
-                          {job.department}
+                          {DEPARTMENTS.find((dept) => dept.id === Number(job.department))?.value || "N/A"}
                         </td>
 
                         {/* STATUS */}
@@ -624,7 +624,7 @@ function RecruitmentMain({ activeTab }) {
 
                       {/* DEPARTMENT */}
                       <td className="px-6 py-5 text-gray-600">
-                        {application.department}
+                        {DEPARTMENTS.find((dept) => dept.id === Number(application.department))?.value || "N/A"}
                       </td>
 
                       {/* APPLIED ON */}

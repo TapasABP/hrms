@@ -4,12 +4,73 @@ import LeaveHistory from "./LeaveHistory";
 import MyAssets from "./MyAssets";
 import axios from "axios";
 import { MAIN_API_URL } from "../constants/global-variables";
+import { LEAVEDURATION, LEAVETYPES } from "../contstants/application";
+import { toast, ToastContainer } from "react-toastify";
+import logo from "../assets/images/logo.png";
 
 const Leave = () => {
     const [leavedata, setleaveData] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [otherData, setOtherData] = useState(null);
     const storedData = JSON.parse(localStorage.getItem("userData"));
+    const [formData, setFormData] = useState({
+        from_date: "",
+        to_date: "",
+        reason: "",
+        leave_type: "",
+        duration: "",
+        leave_wfh: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: Number(value) || value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const payload = {
+            from_date: formData.from_date,
+            to_date: formData.to_date,
+            reason: formData.reason,
+            leave_type: formData.leave_type,
+            duration: formData.duration,
+            leave_wfh: formData.leave_wfh,
+        };
+
+        axios
+            .post(`${MAIN_API_URL}/leave/apply`, payload ,{
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${storedData?.token}`
+                }       
+            })
+            .then((response) => {
+                console.log("Leave applied successfully:", response.data);
+                toast.success("Leave applied successfully!");
+                setFormData({
+                    from_date: "",
+                    to_date: "",
+                    reason: "",
+                    leave_type: "",
+                    duration: "",
+                    leave_wfh: "",
+                });
+                window.location.reload();
+            })
+            .catch((error) => {
+                console.error(
+                    "Error applying leave:",
+                    error.response?.data || error.message
+                );
+                alert("Failed to apply leave");
+            });
+    };
     //   useEffect(() => {
 
     //     if (!storedData?.user || storedData.user.user_type !== 2) {
@@ -56,7 +117,7 @@ const Leave = () => {
             <header className="bg-slate-500 text-white px-8 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
                     <img
-                        src="logo.png"
+                        src={logo}
                         alt="ZeroHR Logo"
                         className="w-14 h-14 rounded-full object-cover bg-white shadow"
                     />
@@ -117,61 +178,108 @@ const Leave = () => {
           </div> */}
 
                     <div className="bg-white rounded-2xl shadow-sm p-6">
-                        <h2 className="text-2xl font-semibold mb-6">
-                            Apply for Leave
-                        </h2>
+                        <h2 className="text-2xl font-semibold mb-6">Apply for Leave</h2>
 
-                        <form className="space-y-5">
+                        <form className="space-y-5" onSubmit={handleSubmit}>
+                            {/* From Date */}
                             <div>
-                                <label className="block mb-2 font-medium">
-                                    Start Date
-                                </label>
+                                <label className="block mb-2 font-medium">Start Date</label>
                                 <input
                                     type="date"
+                                    name="from_date"
+                                    value={formData.from_date}
+                                    onChange={handleChange}
                                     className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+                                    required
                                 />
                             </div>
 
+                            {/* To Date */}
                             <div>
-                                <label className="block mb-2 font-medium">
-                                    End Date
-                                </label>
+                                <label className="block mb-2 font-medium">End Date</label>
                                 <input
                                     type="date"
+                                    name="to_date"
+                                    value={formData.to_date}
+                                    onChange={handleChange}
                                     className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+                                    required
                                 />
                             </div>
 
+                            {/* Duration */}
                             <div>
-                                <label className="block mb-2 font-medium">
-                                    Leave Duration
-                                </label>
-                                <select className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400">
-                                    <option>Select Duration</option>
-                                    <option>Full Day</option>
-                                    <option>Half Day</option>
+                                <label className="block mb-2 font-medium">Leave Duration</label>
+                                <select
+                                    name="duration"
+                                    value={formData.duration}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+                                    required
+                                >
+                                    <option value="">Select Duration</option>
+                                    {/* <option value={6000001}>Full Day</option>
+                                    <option value={6000002}>Half Day</option> */}
+                                    {
+                                        LEAVEDURATION.map((duration) => (
+                                            <option key={duration.id} value={duration.id}>
+                                                {duration.value}
+                                            </option>
+                                        ))
+                                    }
                                 </select>
                             </div>
 
+                            {/* Leave Type */}
                             <div>
-                                <label className="block mb-2 font-medium">
-                                    Leave Type
-                                </label>
-                                <select className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400">
-                                    <option>Select Type</option>
-                                    <option>Casual Leave</option>
-                                    <option>Sick Leave</option>
+                                <label className="block mb-2 font-medium">Leave Type</label>
+                                <select
+                                    name="leave_type"
+                                    value={formData.leave_type}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+                                    required
+                                >
+                                    <option value="">Select Type</option>
+                                    {/* <option value={5000001}>Casual Leave</option>
+                                    <option value={5000002}>Sick Leave</option> */}\
+                                    {
+                                        LEAVETYPES.map((type) => (
+                                            <option key={type.id} value={type.id}>
+                                                {type.value}
+                                            </option>
+                                        ))
+                                    }
                                 </select>
                             </div>
 
+                            {/* WFH Option */}
                             <div>
-                                <label className="block mb-2 font-medium">
-                                    Reason
-                                </label>
+                                <label className="block mb-2 font-medium">Leave / WFH</label>
+                                <select
+                                    name="leave_wfh"
+                                    value={formData.leave_wfh}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+                                    required
+                                >
+                                    <option value="">Select Option</option>
+                                    <option value={7000001}>Leave</option>
+                                    <option value={7000002}>Work From Home</option>
+                                </select>
+                            </div>
+
+                            {/* Reason */}
+                            <div>
+                                <label className="block mb-2 font-medium">Reason</label>
                                 <textarea
-                                    rows="4"
-                                    maxLength="1000"
+                                    rows={4}
+                                    maxLength={1000}
+                                    name="reason"
+                                    value={formData.reason}
+                                    onChange={handleChange}
                                     className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400 resize-none"
+                                    required
                                 />
                             </div>
 
@@ -194,6 +302,7 @@ const Leave = () => {
             <footer className="bg-slate-100 text-slate-500 text-center py-4 text-sm">
                 © 2025 Pratiti Technologies Private Limited
             </footer>
+            <ToastContainer/>
         </div>
     );
 };

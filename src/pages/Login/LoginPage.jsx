@@ -5,6 +5,7 @@ import axios from "axios";
 import { MAIN_API_URL } from "../../constants/global-variables";
 import styles from "../../assets/css/login.module.css";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 const Login = () => {
     const [showReset, setShowReset] = useState(false);
@@ -28,6 +29,8 @@ const Login = () => {
                 if(response.data.status){
                     localStorage.setItem("userData", JSON.stringify(response.data));
                     navigate("/hr-dashboard");
+                }else{
+                    toast.error(response.data.message || "Login failed. Please try again.");
                 }
             })
             .catch((error) => {
@@ -247,8 +250,9 @@ const Login = () => {
                         </button>
                     </div>
                 </div>
+                <ToastContainer/>
             </div>
-
+        
 
         </>
     );

@@ -12,34 +12,60 @@ import RecruitmentDashboard from './Recruitment/RecruitmentDashboard'
 import ViewEmployee from './pages/ViewEmployee/ViewEmployee'
 import EmployeeDashboard from './EmployeeDashboard/EmployeeDashboard'
 import Leave from './Leave/Leave'
+import PublicRoute from './components/Routemanager/PublicRoute'
+import PrivateRoute from './components/Routemanager/PrivateRoute'
 function App() {
-  
-  let path = window.location.pathname.slice(1);
-  useEffect(()=>{
-     
-     document.title = path ? `${path} - HRMS` : "HRMS"; 
 
-  },[path])
+  let path = window.location.pathname.slice(1);
+  console.log(path, 'path')
+  useEffect(() => {
+
+    document.title = path ? `${path} - HRMS` : "HRMS";
+    if (path === "") {
+      window.location.href = "/login";
+    }
+
+  }, [path])
   return (
     <>
       <BrowserRouter>
-       
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/hr-dashboard" element={<Dashboard />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/onboarding" element={<EmployeeOnboarding />} />
-        <Route path="/reimbursements" element={<Reimbursements />} />
-        <Route path="/apply" element={<ApplicationForm />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/job-view/:id" element={<Jobview />} />
-        <Route path="/recruitment" element={<RecruitmentDashboard />} />
-        <Route path="/view-employee" element={<ViewEmployee />} />
-        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
-        <Route path="/leave-history" element={<Leave />} />
-      </Routes>
-    </BrowserRouter>
+
+        <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+          </Route>
+
+          {/* Only HR routes */}
+
+
+          <Route element={<PrivateRoute allowedRoles={[20001]} />}>
+            <Route path="/hr-dashboard" element={<Dashboard />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/onboarding" element={<EmployeeOnboarding />} />
+            <Route path="/reimbursements" element={<Reimbursements />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/job-view/:id" element={<Jobview />} />
+            <Route path="/recruitment" element={<RecruitmentDashboard />} />
+            <Route path="/view-employee" element={<ViewEmployee />} />
+            
+            
+          </Route>
+
+
+
+         {/* All employee routes */}
+          <Route element={<PrivateRoute allowedRoles={[20001, 20002]} />}>
+            <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+            <Route path="/leave-history" element={<Leave />} />
+           <Route path="/apply" element={<ApplicationForm />} />
+            
+          </Route>
+         {/* Only Employee routes */}
+          <Route element={<PrivateRoute allowedRoles={[20002]} />}>
+            
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </>
   )
 }

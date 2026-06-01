@@ -130,7 +130,7 @@ const Reimbursements = () => {
         </h1>
 
         <Link
-          to="/dashboard"
+          to="/hr-dashboard"
           className="text-sm underline"
         >
           Back to Dashboard

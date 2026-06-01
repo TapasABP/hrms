@@ -1,24 +1,24 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { MAIN_API_URL } from "../constants/global-variables";
-
+import logo from "./../assets/images/logo.png";
+import { useNavigate } from "react-router-dom";
+import { LEAVEDURATION, LEAVETYPES } from "../contstants/application";
+import { toast, ToastContainer } from "react-toastify";
 const EmployeeDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
   const userloginData = JSON.parse(localStorage.getItem("userData"));
   const token = userloginData?.token;
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("");
-
+  const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
-
+  const [leavedata, setleaveData] = useState(null);
+  const [otherData, setOtherData] = useState(null);
   const [userData, setUserData] = useState(null);
 
-  const [leaveBalance, setLeaveBalance] = useState({
-    cl: 5,
-    sl: 3,
-    el: 10,
-  });
- const [teammembers,setTeammembers] = useState([])
+ 
+  const [teammembers, setTeammembers] = useState([])
   const [formData, setFormData] = useState({
     leave_type: "",
     duration: "",
@@ -27,22 +27,34 @@ const EmployeeDashboard = () => {
     reason: "",
   });
 
-  // ============================
-  // LOAD USER
-  // ============================
+ 
+   useEffect(() => {
+        axios.post(`${MAIN_API_URL}/leave/leave-wfh`, { user_id: userloginData?.user?.id }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                console.log("Leave Data:", response.data);
+                const leaveHistory = response.data.history || [];
+                const { remaining_cl, remaining_sl, remaining_el, fy_cl, fy_sl, fy_el } = response.data;
+                setOtherData({
+                    "remaining_cl": remaining_cl || 0,
+                    "remaining_sl": remaining_sl || 0,
+                    "remaining_el": remaining_el || 0,
+                    "fy_cl": fy_cl || 0,
+                    "fy_sl": fy_sl || 0,
+                    "fy_el": fy_el || 0,
+                })
+                setleaveData(leaveHistory);
+            })
+            .catch(error => {
+                console.error("Error fetching leave data:", error);
+            });
+    }, [showCelebration])
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("ZeroUserData"));
-
-    if (!storedUser?.user || storedUser.user.user_type !== 2) {
-      alert("Unauthorized");
-      return;
-    }
-
-    setUserData(storedUser);
-  }, []);
-useEffect(()=>{
- if(activeTab === "team") {
-   axios
+    if (activeTab === "team") {
+      axios
         .post(
           `${MAIN_API_URL}/manager/employees`,
           { email: userloginData?.user?.email },
@@ -56,19 +68,19 @@ useEffect(()=>{
         .then((response) => {
           console.log("Employee details response:", response);
           if (response.data) {
-            
+
             setTeammembers(response.data.employees)
-           console.log(data.department, "Department value from API");
-            
+            console.log(data.department, "Department value from API");
+
           }
         })
         .catch((err) => {
           console.error("Error fetching employee data:", err);
-          
+
         })
- }
-        
-},[activeTab])
+    }
+
+  }, [activeTab])
   // ============================
   // HANDLERS
   // ============================
@@ -83,6 +95,7 @@ useEffect(()=>{
 
   const logout = () => {
     localStorage.clear();
+    navigate("/login")
     window.location.reload();
   };
 
@@ -96,14 +109,51 @@ useEffect(()=>{
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log(formData);
+    const payload = {
+      from_date: formData.fromDate,
+      to_date: formData.toDate,
+      reason: formData.reason,
+      leave_type: formData.leave_type,
+      duration: formData.duration,
+      leave_wfh: popupType === "leave" ? 7000001 : 7000002,
+    };
 
-    setShowPopup(false);
-    setShowCelebration(true);
+    axios
+      .post(`${MAIN_API_URL}/leave/apply`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then((response) => {
+        console.log("Leave applied successfully:", response.data);
+        toast.success("Leave applied successfully!");
+        setShowPopup(false);
+        setFormData({
+          fromDate: "",
+          toDate: "",
+          reason: "",
+          leaveType: "",
+          duration: "",
+          leaveWfh: "",
+        });
+        // window.location.reload();
+        setShowCelebration(true);
 
-    setTimeout(() => {
-      setShowCelebration(false);
-    }, 3000);
+        setTimeout(() => {
+          setShowCelebration(false);
+        }, 3000);
+      })
+      .catch((error) => {
+        console.error(
+          "Error applying leave:",
+          error.response?.data || error.message
+        );
+        alert("Failed to apply leave");
+      });
+
+
+
   };
 
   return (
@@ -112,7 +162,7 @@ useEffect(()=>{
       <header className="bg-slate-800 text-white px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img
-            src="logo.png"
+            src={logo}
             alt="logo"
             className="w-12 h-12 rounded-full object-cover"
           />
@@ -144,11 +194,10 @@ useEffect(()=>{
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`py-4 capitalize border-b-2 transition-all ${
-              activeTab === tab
-                ? "border-blue-600 text-blue-600 font-semibold"
-                : "border-transparent text-slate-600 hover:text-blue-600"
-            }`}
+            className={`py-4 capitalize border-b-2 transition-all ${activeTab === tab
+              ? "border-blue-600 text-blue-600 font-semibold"
+              : "border-transparent text-slate-600 hover:text-blue-600"
+              }`}
           >
             {tab}
           </button>
@@ -187,15 +236,15 @@ useEffect(()=>{
             {/* LEAVE BALANCE */}
             <div className="flex flex-wrap gap-4">
               <div className="bg-blue-100 text-blue-700 px-6 py-4 rounded-full font-semibold">
-                CL: {leaveBalance.cl}
+                CL: {otherData?.remaining_cl}
               </div>
 
               <div className="bg-yellow-100 text-yellow-700 px-6 py-4 rounded-full font-semibold">
-                SL: {leaveBalance.sl}
+                SL: {otherData?.remaining_sl}
               </div>
 
               <div className="bg-green-100 text-green-700 px-6 py-4 rounded-full font-semibold">
-                EL: {leaveBalance.el}
+                EL: {otherData?.remaining_el}
               </div>
             </div>
 
@@ -248,11 +297,11 @@ useEffect(()=>{
 
               <div>
                 <h2 className="text-3xl font-bold">
-                  {userData?.user?.fullname}
+                  {userloginData?.user?.name}
                 </h2>
 
                 <p className="text-slate-500 mt-1">
-                  {userData?.user?.designation}
+                  {userloginData?.user?.designation}
                 </p>
               </div>
             </div>
@@ -264,7 +313,7 @@ useEffect(()=>{
                 </h4>
 
                 <p className="font-semibold mt-1">
-                  {userData?.user?.email}
+                  {userloginData?.user?.email}
                 </p>
               </div>
 
@@ -274,7 +323,7 @@ useEffect(()=>{
                 </h4>
 
                 <p className="font-semibold mt-1">
-                  {userData?.user?.username}
+                  {userloginData?.user?.name}
                 </p>
               </div>
             </div>
@@ -292,7 +341,7 @@ useEffect(()=>{
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {leaveBalance.cl}
+                  {otherData?.fy_cl}
                 </p>
               </div>
 
@@ -302,7 +351,7 @@ useEffect(()=>{
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {leaveBalance.sl}
+                  {otherData?.fy_sl}
                 </p>
               </div>
 
@@ -312,7 +361,7 @@ useEffect(()=>{
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {leaveBalance.el}
+                  {otherData?.fy_el}
                 </p>
               </div>
             </div>
@@ -347,14 +396,52 @@ useEffect(()=>{
                 </thead>
 
                 <tbody>
-                  <tr className="border-t">
+                  {/* <tr className="border-t">
                     <td className="p-4">01/06/2026</td>
                     <td className="p-4">02/06/2026</td>
                     <td className="p-4">Vacation</td>
                     <td className="p-4 text-green-600 font-semibold">
                       Approved
                     </td>
-                  </tr>
+                  </tr> */}
+                  {
+                    leavedata?.map((leave) => (
+                      <tr key={leave.id} className="border-t">
+                        <td className="p-4">{new Date(leave.from_date).toLocaleDateString()}</td>
+                        <td className="p-4">{new Date(leave.to_date).toLocaleDateString()}</td>
+                        <td className="p-4">{leave.reason}</td>
+                        {/* <td className={`p-4 font-semibold ${
+                          leave.status === 7000001
+                            ? "text-blue-600"
+                            : leave.status === 7000002
+                              ? "text-yellow-600"
+                              : leave.status === 7000003
+                                ? "text-green-600"
+                                : "text-red-600"
+                        }`}>
+                          {leave.status === 7000001
+                            ? "Applied"
+                            : leave.status === 7000002
+                              ? "Interviewing"
+                              : leave.status === 7000003
+                                ? "Accepted"
+                                : "Rejected"
+                            }
+                        </td> */}
+                        <td className={`p-4 font-semibold ${
+                          leave.status === "Rejected"
+                            ? "text-blue-600"
+                            : leave.status === "Pending"
+                              ? "text-yellow-600"
+                              : leave.status === "Approved"
+                                ? "text-green-600"
+                                : "text-red-600"
+                        }`}>
+                          {leave.status}
+                        </td>
+                      </tr>
+                    ))
+                  }
                 </tbody>
               </table>
             </div>
@@ -382,7 +469,7 @@ useEffect(()=>{
                     />
 
                     <h3 className="font-bold text-lg">
-                        {member.fullname}
+                      {member.fullname}
                     </h3>
 
                     <p className="text-slate-500">
@@ -420,14 +507,17 @@ useEffect(()=>{
                       value={formData.leave_type}
                       onChange={handleChange}
                       className="w-full border border-slate-300 rounded-xl p-3"
+                      required
                     >
                       <option value="">Select</option>
 
-                      <option>Sick Leave</option>
-
-                      <option>Casual Leave</option>
-
-                      <option>Earned Leave</option>
+                      {
+                        LEAVETYPES.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.value}
+                          </option>
+                        ))
+                      }
                     </select>
                   </div>
 
@@ -444,11 +534,16 @@ useEffect(()=>{
                     >
                       <option value="">Select</option>
 
-                      <option>Full Day</option>
-
-                      <option>Half Day</option>
+                      {
+                        LEAVEDURATION.map((duration) => (
+                          <option key={duration.id} value={duration.id}>
+                            {duration.value}
+                          </option>
+                        ))
+                      }
                     </select>
                   </div>
+
                 </>
               )}
 
@@ -529,6 +624,7 @@ useEffect(()=>{
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { MAIN_API_URL } from "../../constants/global-variables";
+import { DEPARTMENTS } from "../../contstants/application";
 
 const Jobview = () => {
 
@@ -304,7 +305,8 @@ const Jobview = () => {
 
               <h3 className="font-semibold text-slate-800">
                 {
-                  job?.department
+                  DEPARTMENTS.find((dept) => dept.id === Number(job?.department)
+                  )?.value || "N/A"
                 }
               </h3>
             </div>
@@ -334,7 +336,7 @@ const Jobview = () => {
           <div className="pt-4">
 
             <Link
-              to={`/apply-job?job_id=${job?.id}`}
+              to={`/apply?job_id=${job?.id}&job_title=${job?.title}`}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg"
             >
               Apply Now →
