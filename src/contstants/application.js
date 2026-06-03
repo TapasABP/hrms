@@ -56,7 +56,7 @@ export const LEAVEDURATION = [
 ];
 
 export const LEAVEAPPLYSTATUS = [
-  { id: 7000001, value: "Pending" },
-  { id: 7000002, value: "Approved" },
-  { id: 7000003, value: "Rejected" },
+  { id: 9000001, value: "Pending" },
+  { id: 9000002, value: "Complete" },
+  { id: 9000003, value: "Rejected" },
 ];

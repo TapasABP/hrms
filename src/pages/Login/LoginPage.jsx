@@ -34,7 +34,8 @@ const Login = () => {
                 }
             })
             .catch((error) => {
-                console.error("Login error:", error);
+                console.error("Login error:", error.response.data.message);
+                toast.error(error.response.data.message || "Login failed. Please try again.");
             });
     };
 
@@ -116,7 +117,7 @@ const Login = () => {
                         >
                             Reset Password
                         </button>
-
+                        <ToastContainer />
                         <div className={styles['footer-text']}>
                             © 2026 ABP eVentures. All rights reserved.
                         </div>
@@ -250,7 +251,7 @@ const Login = () => {
                         </button>
                     </div>
                 </div>
-                <ToastContainer/>
+                
             </div>
         
 

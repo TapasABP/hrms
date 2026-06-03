@@ -460,6 +460,9 @@ const EmployeeDashboard = () => {
                 <div
                   key={member.id}
                   className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all"
+                  onClick={() =>{
+                    navigate(`/employee-details/${member.id}`)
+                  }}
                 >
                   <div className="flex flex-col items-center text-center">
                     <img

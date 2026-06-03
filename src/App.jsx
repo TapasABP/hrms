@@ -14,6 +14,7 @@ import EmployeeDashboard from './EmployeeDashboard/EmployeeDashboard'
 import Leave from './Leave/Leave'
 import PublicRoute from './components/Routemanager/PublicRoute'
 import PrivateRoute from './components/Routemanager/PrivateRoute'
+import EmployeeDetails from './EmployeeDetails/EmployeeDetails'
 function App() {
 
   let path = window.location.pathname.slice(1);
@@ -58,7 +59,7 @@ function App() {
             <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
             <Route path="/leave-history" element={<Leave />} />
            <Route path="/apply" element={<ApplicationForm />} />
-            
+            <Route path="/employee-details/:empId" element={<EmployeeDetails />} />
           </Route>
          {/* Only Employee routes */}
           <Route element={<PrivateRoute allowedRoles={[20002]} />}>

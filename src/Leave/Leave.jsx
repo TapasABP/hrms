@@ -44,11 +44,11 @@ const Leave = () => {
         };
 
         axios
-            .post(`${MAIN_API_URL}/leave/apply`, payload ,{
+            .post(`${MAIN_API_URL}/leave/apply`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${storedData?.token}`
-                }       
+                }
             })
             .then((response) => {
                 console.log("Leave applied successfully:", response.data);
@@ -300,9 +300,10 @@ const Leave = () => {
 
             {/* Footer */}
             <footer className="bg-slate-100 text-slate-500 text-center py-4 text-sm">
-                © 2025 Pratiti Technologies Private Limited
+                © 2026 ABP eVentures. All rights reserved.
+
             </footer>
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 };
