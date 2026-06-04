@@ -1,679 +1,523 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
+import { MAIN_API_URL } from "../../constants/global-variables";
+import axios from "axios";
+import { DEPARTMENTS, LEAVEAPPLYSTATUS, LEAVEDURATION } from "../../contstants/application";
 
 const Attendance = () => {
-  // =====================================
-  // STATES
-  // =====================================
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [deptFilter, setDeptFilter] = useState("");
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [attendanceData, setAttendanceData] =
-    useState([]);
-
-  const [departments, setDepartments] =
-    useState([]);
-
-  const [deptFilter, setDeptFilter] =
-    useState("");
-
-  const [fromDate, setFromDate] =
-    useState(null);
-
-  const [toDate, setToDate] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [showModal, setShowModal] =
-    useState(false);
-
-  const [selectedEmployeeName, setSelectedEmployeeName] =
-    useState("");
-
-  const [leaveWfhHistory, setLeaveWfhHistory] =
-    useState([]);
-
-  const [compOffHistory, setCompOffHistory] =
-    useState([]);
-
-  // =====================================
-  // USER DATA
-  // =====================================
-
-  const userData = JSON.parse(
-    localStorage.getItem(
-      "ZeroUserData"
-    ) || "{}"
-  );
-
-  const orgId =
-    userData?.user?.org_id;
-
-  // =====================================
-  // FORMAT DATE
-  // =====================================
-
-  const fmtDate = (value) => {
-    if (!value) return "-";
-
-    return new Date(
-      value
-    ).toLocaleDateString(
-      "en-GB"
-    );
-  };
-
-  const formatApiDate = (
-    date
-  ) => {
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const token = userData?.token;
+  const orgId = userData?.user?.org_id;
+  const [showModal, setShowModal] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState("");
+  const [leaveWfhHistory, setLeaveWfhHistory] = useState([
+    {
+      "id": 8,
+      "leave_wfh": "7000001",
+      "from_date": "2026-05-28",
+      "to_date": "2026-05-29",
+      "duration": "6000001",
+      "type": "5000002",
+      "reason": "Medical emergency",
+      "status": "Pending",
+      "created_at": "2026-05-29 08:12:38"
+    },
+    {
+      "id": 10,
+      "leave_wfh": "7000002",
+      "from_date": "2026-05-28",
+      "to_date": "2026-05-29",
+      "duration": "6000002",
+      "type": "5000001",
+      "reason": "Medical emergency",
+      "status": "Pending",
+      "created_at": "2026-05-29 08:12:38"
+    }]);
+  const [compOffHistory, setCompOffHistory] = useState([
+    {
+      "id": 12,
+      "leave_wfh": "7000001",
+      "from_date": "2026-05-28",
+      "to_date": "2026-05-29",
+      "duration": "6000001",
+      "type": "5000002",
+      "reason": "Medical emergency",
+      "status": "Pending",
+      "created_at": "2026-05-29 08:12:38"
+    },
+    {
+      "id": 11,
+      "leave_wfh": "7000002",
+      "from_date": "2026-05-28",
+      "to_date": "2026-05-29",
+      "duration": "6000002",
+      "type": "5000001",
+      "reason": "Medical emergency",
+      "status": "Pending",
+      "created_at": "2026-05-29 08:12:38"
+    }]);
+  const formatApiDate = (date) => {
     if (!date) return "";
-
-    return date
-      .toISOString()
-      .split("T")[0];
+    return date.toISOString().split("T")[0];
   };
 
-  // =====================================
-  // LOAD OVERVIEW
-  // =====================================
+  const loadAttendance = () => {
 
-  const loadOverview =
-    async () => {
-      try {
-        setLoading(true);
+    setLoading(true);
 
-        const params =
-          new URLSearchParams({
-            org_id: orgId,
-          });
+    const payload = {
 
-        if (fromDate) {
-          params.set(
-            "from_date",
-            formatApiDate(
-              fromDate
-            )
-          );
-        }
+      from_date: formatApiDate(fromDate),
+      to_date: formatApiDate(toDate),
+      department: deptFilter || undefined,
+    };
 
-        if (toDate) {
-          params.set(
-            "to_date",
-            formatApiDate(
-              toDate
-            )
-          );
-        }
+    axios
+      .post(
+        `${MAIN_API_URL}/attendance/overview`,
+        payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      )
+      .then((response) => {
+        const employees = response.data?.employees || [];
 
-        if (deptFilter) {
-          params.set(
-            "department",
-            deptFilter
-          );
-        }
+        setAttendanceData(employees);
 
-        const res =
-          await fetch(
-            `http://localhost:3000/api/attendance/overview?${params.toString()}`
-          );
+        const deptSet = new Set();
 
-        const data =
-          await res.json();
-
-        const employees =
-          data?.employees ||
-          [];
-
-        setAttendanceData(
-          employees
-        );
-
-        // Department list
-        const deptSet =
-          new Set();
-
-        employees.forEach(
-          (emp) => {
-            if (
-              emp.department
-            ) {
-              deptSet.add(
-                emp.department
-              );
-            }
+        employees.forEach((emp) => {
+          if (emp.department) {
+            deptSet.add(emp.department);
           }
-        );
+        });
 
         setDepartments(
-          Array.from(
-            deptSet
-          ).sort()
+          Array.from(deptSet).sort()
         );
-      } catch (err) {
+      })
+      .catch((error) => {
         console.error(
-          "Failed to fetch attendance overview:",
-          err
+          "Failed to load attendance overview:",
+          error
         );
-      } finally {
+
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Something went wrong";
+
+        console.error("Error:", message);
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    };
-
-  // =====================================
-  // LOAD EMPLOYEE HISTORY
-  // =====================================
-
-  const loadEmployeeHistory =
-    async (
-      userId,
-      fullname
-    ) => {
-      try {
-        const params =
-          new URLSearchParams(
-            {
-              user_id:
-                userId,
-            }
-          );
-
-        if (fromDate) {
-          params.set(
-            "from_date",
-            formatApiDate(
-              fromDate
-            )
-          );
-        }
-
-        if (toDate) {
-          params.set(
-            "to_date",
-            formatApiDate(
-              toDate
-            )
-          );
-        }
-
-        const res =
-          await fetch(
-            `http://localhost:3000/api/attendance/employee-history?${params.toString()}`
-          );
-
-        const data =
-          await res.json();
-
-        setSelectedEmployeeName(
-          fullname
-        );
-
-        setLeaveWfhHistory(
-          data?.leave_wfh_history ||
-            []
-        );
-
-        setCompOffHistory(
-          data?.comp_off_history ||
-            []
-        );
-
-        setShowModal(
-          true
-        );
-      } catch (err) {
-        console.error(
-          "Failed to load employee history:",
-          err
-        );
-      }
-    };
-
-  // =====================================
-  // CLOSE MODAL
-  // =====================================
-
-  const closeHistory =
-    () => {
-      setShowModal(
-        false
-      );
-
-      setLeaveWfhHistory(
-        []
-      );
-
-      setCompOffHistory(
-        []
-      );
-    };
-
-  // =====================================
-  // INITIAL LOAD
-  // =====================================
+      });
+  };
 
   useEffect(() => {
-    if (orgId) {
-      loadOverview();
-    }
-  }, []);
+    loadAttendance();
+  }, [orgId]);
+  const loadEmployeeDetails = (userId, fullname) => {
+    setDetailsLoading(true);
 
+    axios
+      .post(
+        `${MAIN_API_URL}/attendance/employee-history`,
+        {
+          user_id: userId,
+          from_date: formatApiDate(fromDate),
+          to_date: formatApiDate(toDate),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        setSelectedEmployeeName(fullname);
+
+        setLeaveWfhHistory(
+          response.data?.leave_wfh_history || [
+            {
+              "id": 8,
+              "leave_wfh": "7000001",
+              "from_date": "2026-05-28",
+              "to_date": "2026-05-29",
+              "duration": "6000001",
+              "type": "5000002",
+              "reason": "Medical emergency",
+              "status": "Pending",
+              "created_at": "2026-05-29 08:12:38"
+            },
+            {
+              "id": 10,
+              "leave_wfh": "7000002",
+              "from_date": "2026-05-28",
+              "to_date": "2026-05-29",
+              "duration": "6000002",
+              "type": "5000001",
+              "reason": "Medical emergency",
+              "status": "Pending",
+              "created_at": "2026-05-29 08:12:38"
+            }]
+        );
+        setCompOffHistory(
+          response.data?.comp_off_history || [
+            {
+              "id": 12,
+              "leave_wfh": "7000001",
+              "from_date": "2026-05-28",
+              "to_date": "2026-05-29",
+              "duration": "6000001",
+              "type": "5000002",
+              "reason": "Medical emergency",
+              "status": "Pending",
+              "created_at": "2026-05-29 08:12:38"
+            },
+            {
+              "id": 11,
+              "leave_wfh": "7000002",
+              "from_date": "2026-05-28",
+              "to_date": "2026-05-29",
+              "duration": "6000002",
+              "type": "5000001",
+              "reason": "Medical emergency",
+              "status": "Pending",
+              "created_at": "2026-05-29 08:12:38"
+            }]
+        );
+        setShowModal(true);
+      })
+      .catch((error) => {
+        setShowModal(true);
+        console.error(
+          "Failed to load employee details:",
+          error
+        );
+      })
+      .finally(() => {
+        setDetailsLoading(false);
+      });
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setLeaveWfhHistory([]);
+    setSelectedEmployeeName("");
+  };
   return (
-    <div className="bg-slate-50 text-slate-800 min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-slate-800 text-white px-6 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">
-          Attendance
-          Overview
-        </h1>
-
-        <Link
-          to="/hr-dashboard"
-          className="text-sm underline"
-        >
-          Back to
-          Dashboard
+        <h1 className="text-lg font-semibold">Attendance Overview</h1>
+        <Link to="/hr-dashboard" className="text-sm underline">
+          Back to Dashboard
         </Link>
       </header>
 
-      {/* Main */}
-      <main className="p-6 max-w-6xl mx-auto">
+      <main className="max-w-7xl mx-auto p-6">
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow p-4 mb-4">
-          <h2 className="font-semibold mb-3">
-            Filters
-          </h2>
-
+        <div className="bg-white rounded-xl shadow p-4 mb-6">
+          <h2 className="font-semibold mb-3">Filters</h2>
           <div className="grid md:grid-cols-4 gap-3">
             {/* From Date */}
-            <div>
-              {/* <label className="text-xs text-slate-600">
-                From Date
-              </label> */}
-
-              <DatePicker
-                selected={
-                  fromDate
-                }
-                onChange={(
-                  date
-                ) =>
-                  setFromDate(
-                    date
-                  )
-                }
-                placeholderText="Select Date"
-                dateFormat="dd/MM/yyyy"
-                className="w-full border rounded p-2 text-sm"
-              />
-            </div>
-
+            <DatePicker
+              selected={fromDate}
+              onChange={(date) => setFromDate(date)}
+              placeholderText="From Date"
+              dateFormat="yyyy-MM-dd"
+              className="w-full border rounded p-2 text-sm"
+            />
             {/* To Date */}
-            <div>
-              {/* <label className="text-xs text-slate-600">
-                To Date
-              </label> */}
-
-              <DatePicker
-                selected={
-                  toDate
-                }
-                onChange={(
-                  date
-                ) =>
-                  setToDate(
-                    date
-                  )
-                }
-                placeholderText="Select Date"
-                dateFormat="dd/MM/yyyy"
-                className="w-full border rounded p-2 text-sm"
-              />
-            </div>
-
+            <DatePicker
+              selected={toDate}
+              onChange={(date) => setToDate(date)}
+              placeholderText="To Date"
+              dateFormat="yyyy-MM-dd"
+              className="w-full border rounded p-2 text-sm"
+            />
             {/* Department */}
-            <div>
-              <label className="text-xs text-slate-600">
-                Department
-              </label>
-
-              <select
-                value={
-                  deptFilter
-                }
-                onChange={(
-                  e
-                ) =>
-                  setDeptFilter(
-                    e
-                      .target
-                      .value
-                  )
-                }
-                className="w-full border rounded p-2 text-sm"
-              >
-                <option value="">
-                  All
-                  Departments
+            <select
+              value={deptFilter}
+              onChange={(e) => setDeptFilter(Number(e.target.value))}
+              className="w-full border rounded p-2 text-sm"
+            >
+              <option value="">All Departments</option>
+              {DEPARTMENTS.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.value}
                 </option>
-
-                {departments.map(
-                  (
-                    dept
-                  ) => (
-                    <option
-                      key={
-                        dept
-                      }
-                      value={
-                        dept
-                      }
-                    >
-                      {dept}
-                    </option>
-                  )
-                )}
-              </select>
-            </div>
-
+              ))}
+            </select>
             {/* Apply */}
-            <div className="flex items-end">
-              <button
-                onClick={
-                  loadOverview
-                }
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Apply
-              </button>
-            </div>
+            <button
+              onClick={loadAttendance}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Apply
+            </button>
           </div>
         </div>
 
         {/* Attendance Table */}
-        <div className="bg-white rounded-xl shadow p-4 overflow-x-auto">
-          <h2 className="font-semibold mb-3">
-            All Employees
-            Attendance
-            Snapshot
-          </h2>
+        <div className="bg-white rounded-xl shadow overflow-hidden">
+          <div className="px-5 py-4 border-b">
+            <h2 className="font-semibold">Employee Attendance Summary</h2>
+          </div>
 
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-100 text-left">
-                <th className="p-3">
-                  Employee
-                </th>
-                <th className="p-3">
-                  Department
-                </th>
-                <th className="p-3">
-                  Leave
-                  Requests
-                </th>
-                <th className="p-3">
-                  WFH
-                  Requests
-                </th>
-                <th className="p-3">
-                  Comp Off
-                  / Office
-                  Duty
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center p-6"
-                  >
-                    Loading...
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-100 text-left">
+                  <th className="p-3">Employee ID</th>
+                  <th className="p-3">Employee Name</th>
+                  <th className="p-3">Department</th>
+                  <th className="p-3">Leave Requests</th>
+                  <th className="p-3">WFH Requests</th>
+                  <th className="p-3">Comp Off Requests</th>
+                  <th className="p-3">View</th>
                 </tr>
-              ) : attendanceData.length >
-                0 ? (
-                attendanceData.map(
-                  (
-                    row,
-                    index
-                  ) => (
-                    <tr
-                      key={
-                        row.user_id ||
-                        index
-                      }
-                      className="border-b hover:bg-slate-50 cursor-pointer"
-                      onClick={() =>
-                        loadEmployeeHistory(
-                          row.user_id,
-                          row.fullname
-                        )
-                      }
-                    >
-                      <td className="p-3">
-                        {row.fullname ||
-                          "-"}
-                      </td>
+              </thead>
 
-                      <td className="p-3">
-                        {row.department ||
-                          "-"}
-                      </td>
-
-                      <td className="p-3">
-                        {row.leave_count ||
-                          0}
-                      </td>
-
-                      <td className="p-3">
-                        {row.wfh_count ||
-                          0}
-                      </td>
-
-                      <td className="p-3">
-                        {row.comp_off_count ||
-                          0}
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center p-6">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : attendanceData.length > 0 ? (
+                  attendanceData.map((emp) => (
+                    <tr key={emp.user_id} className="border-b hover:bg-slate-50" >
+                      <td className="p-3">{emp.user_id}</td>
+                      <td className="p-3 font-medium">{emp.fullname}</td>
+                      <td className="p-3">{DEPARTMENTS.find(dept => dept.id == emp.department)?.value || "Unknown"}</td>
+                      <td className="p-3">{emp.leave_count}</td>
+                      <td className="p-3">{emp.wfh_count}</td>
+                      <td className="p-3">{emp.comp_off_count}</td>
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() =>
+                            loadEmployeeDetails(
+                              emp.user_id,
+                              emp.fullname
+                            )
+                          }
+                          className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200"
+                          title="View Details"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                            />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
-                  )
-                )
-              ) : (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center p-6 text-slate-500"
-                  >
-                    No
-                    attendance
-                    records
-                    found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center p-6 text-slate-500">
+                      No records found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
         </div>
-      </main>
-
-      {/* History Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[95%] max-w-5xl rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-semibold">
-                {
-                  selectedEmployeeName
-                }{" "}
-                - Full
-                Attendance
-                History
-              </h3>
-
-              <button
-                onClick={
-                  closeHistory
-                }
-                className="px-3 py-1 bg-slate-700 text-white rounded"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Leave WFH */}
-              <div>
-                <h4 className="font-medium mb-2">
-                  Leave &
-                  WFH
-                </h4>
-
-                <div className="max-h-72 overflow-auto border rounded">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-slate-100">
-                        <th className="p-2">
-                          Type
-                        </th>
-                        <th className="p-2">
-                          From
-                        </th>
-                        <th className="p-2">
-                          To
-                        </th>
-                        <th className="p-2">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {leaveWfhHistory.map(
-                        (
-                          item,
-                          index
-                        ) => (
-                          <tr
-                            key={
-                              index
-                            }
-                            className="border-b"
-                          >
-                            <td className="p-2">
-                              {
-                                item.leave_wfh
-                              }
-                            </td>
-
-                            <td className="p-2">
-                              {fmtDate(
-                                item.from_date
-                              )}
-                            </td>
-
-                            <td className="p-2">
-                              {fmtDate(
-                                item.to_date
-                              )}
-                            </td>
-
-                            <td className="p-2">
-                              {
-                                item.status
-                              }
-                            </td>
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+        {/* History Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-xl shadow-xl w-[95%] max-w-5xl p-6">
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">
+                  {selectedEmployeeName} - Attendance History
+                </h2>
+                <button
+                  onClick={closeModal}
+                  className="px-3 py-1 bg-slate-700 text-white rounded"
+                >
+                  Close
+                </button>
               </div>
 
-              {/* Comp Off */}
-              <div>
-                <h4 className="font-medium mb-2">
-                  Comp Off
-                  / Office
-                  Duty
-                </h4>
-
-                <div className="max-h-72 overflow-auto border rounded">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-slate-100">
-                        <th className="p-2">
-                          From
-                        </th>
-                        <th className="p-2">
-                          To
-                        </th>
-                        <th className="p-2">
-                          Original
-                        </th>
-                        <th className="p-2">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {compOffHistory.map(
-                        (
-                          item,
-                          index
-                        ) => (
-                          <tr
-                            key={
-                              index
-                            }
-                            className="border-b"
-                          >
-                            <td className="p-2">
-                              {fmtDate(
-                                item.from_date
-                              )}
-                            </td>
-
-                            <td className="p-2">
-                              {fmtDate(
-                                item.to_date
-                              )}
-                            </td>
-
-                            <td className="p-2">
-                              {fmtDate(
-                                item.original_from_date
-                              )}{" "}
-                              -
-                              {" "}
-                              {fmtDate(
-                                item.original_to_date
-                              )}
-                            </td>
-
-                            <td className="p-2">
-                              {
-                                item.status
-                              }
+              {/* Modal Content */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Leave & WFH History */}
+                <div>
+                  <h3 className="font-medium mb-2">Leave History</h3>
+                  <div className="overflow-auto max-h-[400px] border rounded">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-100">
+                          <th className="p-2 text-left">From</th>
+                          <th className="p-2 text-left">To</th>
+                          <th className="p-2 text-left">Duration</th>
+                          <th className="p-2 text-left">Reason</th>
+                          <th className="p-2 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leaveWfhHistory?.length > 0 ? (
+                          leaveWfhHistory?.map((item) => (
+                            <tr key={item.id} className="border-b">
+                              <td className="p-2">{item.from_date}</td>
+                              <td className="p-2">{item.to_date}</td>
+                              <td className="p-2">{LEAVEDURATION.find(duration => duration.id == item.duration)?.value || "Unknown"}</td>
+                              <td className="p-2">{item.reason}</td>
+                              <td className="p-2">
+                                <span
+                                  className={`px-2 py-1 rounded text-xs ${item.status === "9000002"
+                                    ? "bg-green-100 text-green-700"
+                                    : item.status === "9000003"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                    }`}
+                                >
+                                  {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="p-6 text-center text-slate-500">
+                              No Leave/WFH history found
                             </td>
                           </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2">WFH History</h3>
+                  <div className="overflow-auto max-h-[400px] border rounded">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-100">
+                          <th className="p-2 text-left">From</th>
+                          <th className="p-2 text-left">To</th>
+                          <th className="p-2 text-left">Duration</th>
+                          <th className="p-2 text-left">Reason</th>
+                          <th className="p-2 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leaveWfhHistory?.length > 0 ? (
+                          leaveWfhHistory?.map((item) => (
+                            <tr key={item.id} className="border-b">
+                              <td className="p-2">{item.from_date}</td>
+                              <td className="p-2">{item.to_date}</td>
+                              <td className="p-2">{LEAVEDURATION.find(duration => duration.id == item.duration)?.value || "Unknown"}</td>
+                              <td className="p-2">{item.reason}</td>
+                              <td className="p-2">
+                                <span
+                                  className={`px-2 py-1 rounded text-xs ${item.status === "9000002"
+                                    ? "bg-green-100 text-green-700"
+                                    : item.status === "9000003"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                    }`}
+                                >
+                                  {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="p-6 text-center text-slate-500">
+                              No Leave/WFH history found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {/* Comp Off History */}
+                <div>
+                  <h3 className="font-medium mb-2">Comp Off History</h3>
+                  <div className="overflow-auto max-h-[400px] border rounded">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-100">
+                          <th className="p-2 text-left">From</th>
+                          <th className="p-2 text-left">To</th>
+                          <th className="p-2 text-left">Reason</th>
+                          <th className="p-2 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {compOffHistory?.length > 0 ? (
+                          compOffHistory?.map((item) => (
+                            <tr key={item.id} className="border-b">
+                              <td className="p-2">{item.from_date}</td>
+                              <td className="p-2">{item.to_date}</td>
+                              <td className="p-2">{item.reason}</td>
+                              <td className="p-2">
+                                <span
+                                  className={`px-2 py-1 rounded text-xs ${item.status === "9000002"
+                                    ? "bg-green-100 text-green-700"
+                                    : item.status === "9000003"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                    }`}
+                                >
+                                  {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="p-6 text-center text-slate-500">
+                              No Comp Off history found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 };

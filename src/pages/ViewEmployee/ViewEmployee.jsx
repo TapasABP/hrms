@@ -167,11 +167,11 @@ const ViewEmployee = () => {
       console.log("Update Success Response:", response.data);
     })
     .catch((err) => {
-      console.error("Error saving employee details:", err);
+      console.error("Error saving employee details:", err.response.data);
       alert(err.response?.data?.error || "Failed to update employee information.");
     });
   };
-  // --- COPY PASTE EDIT FUNCTION END ---
+  
 
   if (loading) {
     return (

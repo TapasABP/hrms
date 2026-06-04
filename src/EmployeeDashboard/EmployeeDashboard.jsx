@@ -1,9 +1,9 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { MAIN_API_URL } from "../constants/global-variables";
 import logo from "./../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-import { LEAVEDURATION, LEAVETYPES } from "../contstants/application";
+import { LEAVEAPPLYSTATUS, LEAVEDURATION, LEAVETYPES } from "../contstants/application";
 import { toast, ToastContainer } from "react-toastify";
 const EmployeeDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
@@ -16,42 +16,150 @@ const EmployeeDashboard = () => {
   const [leavedata, setleaveData] = useState(null);
   const [otherData, setOtherData] = useState(null);
   const [userData, setUserData] = useState(null);
-
- 
+  const [compOffData, setCompOffData] = useState(null);
+  const [reimbursementHistory, setReimbursementHistory] = useState(null);
   const [teammembers, setTeammembers] = useState([])
   const [formData, setFormData] = useState({
-    leave_type: "",
-    duration: "",
-    fromDate: "",
-    toDate: "",
-    reason: "",
+    // leave_type: "",
+    // duration: "",
+    // fromDate: "",
+    // toDate: "",
+    // reason: "",
   });
 
- 
-   useEffect(() => {
-        axios.post(`${MAIN_API_URL}/leave/leave-wfh`, { user_id: userloginData?.user?.id }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-            .then(response => {
-                console.log("Leave Data:", response.data);
-                const leaveHistory = response.data.history || [];
-                const { remaining_cl, remaining_sl, remaining_el, fy_cl, fy_sl, fy_el } = response.data;
-                setOtherData({
-                    "remaining_cl": remaining_cl || 0,
-                    "remaining_sl": remaining_sl || 0,
-                    "remaining_el": remaining_el || 0,
-                    "fy_cl": fy_cl || 0,
-                    "fy_sl": fy_sl || 0,
-                    "fy_el": fy_el || 0,
-                })
-                setleaveData(leaveHistory);
-            })
-            .catch(error => {
-                console.error("Error fetching leave data:", error);
+
+  // useEffect(() => {
+  //   axios.post(`${MAIN_API_URL}/leave/leave-wfh`, { user_id: userloginData?.user?.id }, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }
+  //   })
+  //     .then(response => {
+  //       console.log("Leave Data:", response.data);
+  //       const leaveHistory = response.data.history || [];
+  //       const { remaining_cl, remaining_sl, remaining_el, fy_cl, fy_sl, fy_el } = response.data;
+  //       setOtherData({
+  //         "remaining_cl": remaining_cl || 0,
+  //         "remaining_sl": remaining_sl || 0,
+  //         "remaining_el": remaining_el || 0,
+  //         "fy_cl": fy_cl || 0,
+  //         "fy_sl": fy_sl || 0,
+  //         "fy_el": fy_el || 0,
+  //       })
+  //       setleaveData(leaveHistory);
+  //     })
+  //     .catch(error => {
+  //       console.error("Error fetching leave data:", error);
+  //     });
+
+  //   axios.get(`${MAIN_API_URL}/comp/comp-off-list/${userloginData?.user?.id}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }
+  //   })
+  //     .then(response => {
+  //       console.log("Comp Off Data:", response.data);
+  //       const compOffHistory = response.data.data || [];
+
+
+  //       setCompOffData(compOffHistory);
+  //     })
+  //     .catch(error => {
+  //       console.error("Error fetching leave data:", error);
+  //     });
+
+
+  //   axios.get(`${MAIN_API_URL}/reimbursements/reimbursements-list/${userloginData?.user?.id}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }
+  //   })
+  //     .then(response => {
+  //       console.log("Reimbursement Data:", response.data);
+  //       const reimbursementHistory = response.data.data || [];
+  //       setReimbursementHistory(reimbursementHistory);
+  //     })
+  //     .catch(error => {
+  //       console.error("Error fetching reimbursement data:", error);
+  //     });
+
+
+  // }, [showCelebration])
+
+  useEffect(() => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    axios
+      .all([
+
+        axios.post(
+          `${MAIN_API_URL}/employee/home-summary`,
+          { user_id: userloginData?.user?.id },
+          config
+        ),
+
+        axios.post(
+          `${MAIN_API_URL}/leave/leave-wfh`,
+          { user_id: userloginData?.user?.id },
+          config
+        ),
+
+        axios.get(
+          `${MAIN_API_URL}/comp/comp-off-list/${userloginData?.user?.id}`,
+          config
+        ),
+
+        axios.get(
+          `${MAIN_API_URL}/reimbursements/reimbursements-list/${userloginData?.user?.id}`,
+          config
+        ),
+      ])
+      .then(
+        axios.spread(
+          (userResponseData,
+            leaveResponse,
+            compOffResponse,
+            reimbursementResponse
+          ) => {
+            // User Data
+            const userData = userResponseData.data;
+            console.log(userData, "User Data from API");
+            setUserData(userData);
+
+            // Leave Data
+            const leaveData = leaveResponse.data;
+
+            setOtherData({
+              remaining_cl: leaveData.remaining_cl || 0,
+              remaining_sl: leaveData.remaining_sl || 0,
+              remaining_el: leaveData.remaining_el || 0,
+              fy_cl: leaveData.fy_cl || 0,
+              fy_sl: leaveData.fy_sl || 0,
+              fy_el: leaveData.fy_el || 0,
             });
-    }, [showCelebration])
+
+            setleaveData(leaveData.history || []);
+
+            // Comp Off Data
+            setCompOffData(
+              compOffResponse.data.data || []
+            );
+
+            // Reimbursement Data
+            setReimbursementHistory(
+              reimbursementResponse.data.data || []
+            );
+          }
+        )
+      )
+      .catch((error) => {
+        console.error("Error loading dashboard data:", error);
+      });
+  }, [showCelebration])
   useEffect(() => {
     if (activeTab === "team") {
       axios
@@ -79,6 +187,28 @@ const EmployeeDashboard = () => {
 
         })
     }
+    // else if(activeTab === "leaves"){
+    //   axios
+    //         .post(
+    //             `${MAIN_API_URL}/reimbursements/overview`, { user_id: empId }, {
+    //             "Content-Type": "application/json",
+    //             headers: { Authorization: `Bearer ${token}` }
+    //         }
+    //         )
+    //         .then((res) => {
+    //             const data = res.data;
+    //             console.log(data, 'leave wfh history')
+
+    //             setReimbursementHistory(
+    //                 data.requests || []
+    //             );
+
+
+    //         })
+    //         .catch((err) => {
+    //             console.error(err);
+    //         });
+    // }
 
   }, [activeTab])
   // ============================
@@ -155,7 +285,86 @@ const EmployeeDashboard = () => {
 
 
   };
+  const handleSubmitReimbursement = async (e) => {
+    e.preventDefault();
 
+    const payload = {
+      email: userloginData?.user?.email,
+      request_for: formData.requestFor,
+      amount_inr: formData.amountInr,
+      request_date: formData.requestDate,
+
+    };
+
+    axios
+      .post(
+        `${MAIN_API_URL}/reimbursements/apply-reimbursement`,
+        payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      }
+      )
+      .then((response) => {
+        console.log(response.data);
+        toast.success(response.data.message || "Reimbursement request submitted successfully!");
+        setFormData({
+          requestFor: "",
+          amountInr: "",
+          requestDate: "",
+        });
+        closePopup();
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error(error.response.data.message || "Something went wrong!");
+        const message =
+          error.response?.data?.message ||
+          error.message;
+
+        console.error(message);
+      });
+  };
+  const handleSubmitCompOff = (e) => {
+    e.preventDefault();
+    const payload = {
+      "email": userloginData?.user?.email,
+      "from_date": formData.fromDate,
+      "to_date": formData.toDate,
+      "original_from_date": formData.originalFromDate,
+      "original_to_date": formData.originalToDate,
+      "reason": formData.reason
+    }
+
+    axios
+      .post(
+        `${MAIN_API_URL}/comp/apply-comp-off`,
+        payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      }
+      )
+      .then((response) => {
+        console.log(response.data);
+        toast.success(response.data.message || "Comp Off request submitted successfully!");
+        setFormData({});
+        closePopup();
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error(error.response.data.message || "Something went wrong!");
+        const message =
+          error.response?.data?.message ||
+          error.message;
+
+        console.error(message);
+      });
+  }
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* ================= HEADER ================= */}
@@ -219,16 +428,16 @@ const EmployeeDashboard = () => {
 
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold">
-                  {userData?.user?.fullname}
+                  {userloginData?.user?.name || "John Doe"}
                 </h2>
 
                 <p className="text-slate-500">
-                  {userData?.user?.designation ||
+                  {userloginData?.user?.designation ||
                     "Software Engineer"}
                 </p>
 
                 <p className="text-slate-500">
-                  {userData?.user?.email}
+                  {userloginData?.user?.email}
                 </p>
               </div>
             </div>
@@ -256,17 +465,35 @@ const EmployeeDashboard = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="bg-slate-50 rounded-xl p-4">
-                    John Doe
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-4">
-                    Sarah Smith
-                  </div>
+                  {
+                    userData?.birthdays?.length > 0 ? (
+                      userData.birthdays.map((birthday) => (
+                        <div key={birthday.id} className="bg-slate-50 rounded-xl p-4">
+                          {birthday.name}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="bg-slate-50 rounded-xl p-4">
+                        No Birthdays Today
+                      </div>
+                    )
+                  }
                 </div>
               </div>
+               <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">
+                 🚪 Who's on Leave Today
+                </h3>
 
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <div className="space-y-3">
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    Tapas Dey
+                  </div>
+
+                  
+                </div>
+              </div>
+              {/* <div className="bg-white rounded-2xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   📅 Upcoming Holidays
                 </h3>
@@ -280,7 +507,7 @@ const EmployeeDashboard = () => {
                     Diwali
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
@@ -288,6 +515,7 @@ const EmployeeDashboard = () => {
         {/* ================= PROFILE ================= */}
         {activeTab === "profile" && (
           <div className="bg-white rounded-2xl shadow-sm p-8 max-w-4xl">
+            {/* Header */}
             <div className="flex flex-wrap items-center gap-6 mb-8">
               <img
                 src="https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
@@ -297,34 +525,101 @@ const EmployeeDashboard = () => {
 
               <div>
                 <h2 className="text-3xl font-bold">
-                  {userloginData?.user?.name}
+                  John Doe
                 </h2>
 
                 <p className="text-slate-500 mt-1">
-                  {userloginData?.user?.designation}
+                  Software Engineer
+                </p>
+
+                <p className="text-slate-400 text-sm mt-1">
+                  EMP001 | Engineering
                 </p>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            {/* Contact */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-slate-100 p-5 rounded-xl">
-                <h4 className="text-sm text-slate-500">
-                  Email
-                </h4>
-
+                <h4 className="text-sm text-slate-500">Email</h4>
                 <p className="font-semibold mt-1">
-                  {userloginData?.user?.email}
+                  john.doe@company.com
                 </p>
               </div>
 
               <div className="bg-slate-100 p-5 rounded-xl">
-                <h4 className="text-sm text-slate-500">
-                  Username
-                </h4>
-
+                <h4 className="text-sm text-slate-500">Phone</h4>
                 <p className="font-semibold mt-1">
-                  {userloginData?.user?.name}
+                  9876543210
                 </p>
+              </div>
+            </div>
+
+            {/* Personal Information */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">
+                Personal Information
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Gender</p>
+                  <p className="font-medium">Male</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Date of Birth</p>
+                  <p className="font-medium">12 Aug 1995</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Blood Group</p>
+                  <p className="font-medium">B+</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Marital Status</p>
+                  <p className="font-medium">Single</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
+                  <p className="text-sm text-slate-500">Address</p>
+                  <p className="font-medium">Kolkata, West Bengal</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Employment Information */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">
+                Employment Information
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Staff No</p>
+                  <p className="font-medium">EMP001</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Department</p>
+                  <p className="font-medium">Engineering</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Designation</p>
+                  <p className="font-medium">Software Engineer</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Date of Joining</p>
+                  <p className="font-medium">{userData?.date_of_joining || "N/A"}</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
+                  <p className="text-sm text-slate-500">Reporting Manager</p>
+                  <p className="font-medium">{userData?.reporting_manager || "N/A"}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -341,7 +636,7 @@ const EmployeeDashboard = () => {
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {otherData?.fy_cl}
+                  {otherData?.remaining_cl}
                 </p>
               </div>
 
@@ -351,7 +646,7 @@ const EmployeeDashboard = () => {
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {otherData?.fy_sl}
+                  {otherData?.remaining_sl}
                 </p>
               </div>
 
@@ -361,7 +656,7 @@ const EmployeeDashboard = () => {
                 </h4>
 
                 <p className="text-3xl font-bold mt-2">
-                  {otherData?.fy_el}
+                  {otherData?.remaining_el}
                 </p>
               </div>
             </div>
@@ -377,14 +672,30 @@ const EmployeeDashboard = () => {
 
               <button
                 onClick={() => openPopup("wfh")}
-                className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply WFH
               </button>
+              <button
+                onClick={() => openPopup("reimbursement")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
+              >
+                + Apply For Reimbursement
+              </button>
+              <button
+                onClick={() => openPopup("compOff")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
+              >
+                + Apply for Compensatory Off / Office Duty
+              </button>
             </div>
-
-            {/* TABLE */}
+            {/* TABLE FOR LEAVE */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b bg-slate-50">
+                <h3 className="text-xl font-bold text-slate-800">
+                  WFH History
+                </h3>
+              </div>
               <table className="w-full">
                 <thead className="bg-slate-100">
                   <tr>
@@ -405,7 +716,7 @@ const EmployeeDashboard = () => {
                     </td>
                   </tr> */}
                   {
-                    leavedata?.map((leave) => (
+                    leavedata?.filter((leave) => leave.leave_wfh === "7000002").map((leave) => (
                       <tr key={leave.id} className="border-t">
                         <td className="p-4">{new Date(leave.from_date).toLocaleDateString()}</td>
                         <td className="p-4">{new Date(leave.to_date).toLocaleDateString()}</td>
@@ -428,20 +739,253 @@ const EmployeeDashboard = () => {
                                 : "Rejected"
                             }
                         </td> */}
-                        <td className={`p-4 font-semibold ${
-                          leave.status === "Rejected"
-                            ? "text-blue-600"
-                            : leave.status === "Pending"
-                              ? "text-yellow-600"
-                              : leave.status === "Approved"
-                                ? "text-green-600"
-                                : "text-red-600"
-                        }`}>
-                          {leave.status}
+                        <td className={`p-4 font-semibold ${leave.status === "Rejected"
+                          ? "text-blue-600"
+                          : leave.status === "Pending"
+                            ? "text-yellow-600"
+                            : leave.status === "Approved"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}>
+                          {LEAVEAPPLYSTATUS.find(item => item.id == leave.status)?.value}
                         </td>
                       </tr>
                     ))
                   }
+                </tbody>
+              </table>
+            </div>
+            {/* TABLE FOR WFH */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b bg-slate-50">
+                <h3 className="text-xl font-bold text-slate-800">
+                  Leave History
+                </h3>
+              </div>
+              <table className="w-full">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="text-left p-4">From</th>
+                    <th className="text-left p-4">To</th>
+                    <th className="text-left p-4">Duration</th>
+                    <th className="text-left p-4">Reason</th>
+                    <th className="text-left p-4">Type</th>
+                    <th className="text-left p-4">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {
+                    leavedata?.filter((leave) => leave.leave_wfh === "7000001").map((leave) => (
+                      <tr key={leave.id} className="border-t">
+                        <td className="p-4">{new Date(leave.from_date).toLocaleDateString()}</td>
+                        <td className="p-4">{new Date(leave.to_date).toLocaleDateString()}</td>
+                        <td className="p-4">{LEAVEDURATION.find(item => item.id == leave.duration)?.value || leave.duration}</td>
+                        <td className="p-4">{leave.reason}</td>
+                        <td className="p-4">{LEAVETYPES.find(item => item.id == leave.type)?.value || leave.type}</td>
+                        {/* <td className={`p-4 font-semibold ${
+                          leave.status === 7000001
+                            ? "text-blue-600"
+                            : leave.status === 7000002
+                              ? "text-yellow-600"
+                              : leave.status === 7000003
+                                ? "text-green-600"
+                                : "text-red-600"
+                        }`}>
+                          {leave.status === 7000001
+                            ? "Applied"
+                            : leave.status === 7000002
+                              ? "Interviewing"
+                              : leave.status === 7000003
+                                ? "Accepted"
+                                : "Rejected"
+                            }
+                        </td> */}
+                        <td className={`p-4 font-semibold ${leave.status === "Rejected"
+                          ? "text-blue-600"
+                          : leave.status === "Pending"
+                            ? "text-yellow-600"
+                            : leave.status === "Approved"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}>
+                          {LEAVEAPPLYSTATUS.find(item => item.id == leave.status)?.value}
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table for Comp off */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b bg-slate-50">
+                <h3 className="text-xl font-bold text-slate-800">
+                  Comp Off / Office Duty History
+                </h3>
+              </div>
+
+              <table className="w-full">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="text-left p-4">From</th>
+                    <th className="text-left p-4">To</th>
+                    <th className="text-left p-4">Original From</th>
+                    <th className="text-left p-4">Original To</th>
+                    <th className="text-left p-4">Reason</th>
+                    <th className="text-left p-4">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {compOffData?.length > 0 ? (
+                    compOffData.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="border-t hover:bg-slate-50 transition"
+                      >
+                        <td className="p-4">
+                          {new Date(item.from_date).toLocaleDateString()}
+                        </td>
+
+                        <td className="p-4">
+                          {new Date(item.to_date).toLocaleDateString()}
+                        </td>
+
+                        <td className="p-4">
+                          {new Date(item.original_from_date).toLocaleDateString()}
+                        </td>
+
+                        <td className="p-4">
+                          {new Date(item.original_to_date).toLocaleDateString()}
+                        </td>
+
+                        <td className="p-4">{item.reason}</td>
+
+                        <td
+                          className={`p-4 font-semibold ${item.status === "9000001"
+                            ? "text-yellow-600"
+                            : item.status === "9000002"
+                              ? "text-green-600"
+                              : item.status === "9000003"
+                                ? "text-red-600"
+                                : "text-slate-600"
+                            }`}
+                        >
+                          {item.status === "9000001"
+                            ? "Pending"
+                            : item.status === "9000002"
+                              ? "Approved"
+                              : item.status === "9000003"
+                                ? "Rejected"
+                                : item.status}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="p-6 text-center text-slate-500"
+                      >
+                        No Comp Off / Office Duty requests found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {/* Table for Reimbursements */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b bg-slate-50">
+                <h3 className="text-xl font-bold text-slate-800">
+                  Reimbursement History
+                </h3>
+              </div>
+
+              <table className="w-full">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="text-left p-4">Request For</th>
+                    <th className="text-left p-4">Amount</th>
+                    <th className="text-left p-4">Request Date</th>
+                    {/* <th className="text-left p-4">Attachment</th> */}
+                    <th className="text-left p-4">Status</th>
+                    {/* <th className="text-left p-4">Reject Reason</th> */}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {reimbursementHistory?.length > 0 ? (
+                    reimbursementHistory.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="border-t hover:bg-slate-50 transition"
+                      >
+                        <td className="p-4">
+                          {item.request_for}
+                        </td>
+
+                        <td className="p-4">
+                          ₹{Number(item.amount_inr).toLocaleString("en-IN")}
+                        </td>
+
+                        <td className="p-4">
+                          {new Date(
+                            item.request_date
+                          ).toLocaleDateString()}
+                        </td>
+
+                        {/* <td className="p-4">
+                          {item.attachmment ? (
+                            <a
+                              href={`http://localhost:3000/${item.attachmment}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              View File
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </td> */}
+
+                        <td
+                          className={`p-4 font-semibold ${item.status === "9000001"
+                            ? "text-yellow-600"
+                            : item.status === "9000002"
+                              ? "text-green-600"
+                              : item.status === "9000003"
+                                ? "text-red-600"
+                                : "text-slate-600"
+                            }`}
+                        >
+                          {item.status === "9000001"
+                            ? "Pending"
+                            : item.status === "9000002"
+                              ? "Approved"
+                              : item.status === "9000003"
+                                ? "Rejected"
+                                : item.status}
+                        </td>
+
+                        {/* <td className="p-4">
+                          {item.reject_reason || "-"}
+                        </td> */}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="p-6 text-center text-slate-500"
+                      >
+                        No reimbursement requests found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -450,44 +994,66 @@ const EmployeeDashboard = () => {
 
         {/* ================= TEAM ================= */}
         {activeTab === "team" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">
-              My Team
-            </h2>
+  <div>
+    <h2 className="text-2xl font-bold mb-6">
+      My Team
+    </h2>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teammembers?.map((member) => (
-                <div
-                  key={member.id}
-                  className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all"
-                  onClick={() =>{
-                    navigate(`/employee-details/${member.id}`)
-                  }}
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
-                      alt=""
-                      className="w-20 h-20 rounded-full mb-4"
-                    />
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {teammembers?.map((member) => (
+        <div
+          key={member.id}
+          className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"
+          onClick={() => {
+            navigate(`/employee-details/${member.id}`);
+          }}
+        >
+          <div className="flex flex-col items-center text-center">
+            <img
+              src={
+                member.gender === "Male"
+                  ? "https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
+                  : member.gender === "Female"
+                  ? "https://cdn-icons-png.flaticon.com/512/4140/4140062.png"
+                  : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              }
+              alt={member.fullname}
+              className="w-20 h-20 rounded-full mb-4"
+            />
 
-                    <h3 className="font-bold text-lg">
-                      {member.fullname}
-                    </h3>
+            <h3 className="font-bold text-lg text-slate-800">
+              {member.fullname}
+            </h3>
 
-                    <p className="text-slate-500">
-                      {member.position}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <p className="text-slate-500 mb-3">
+              {member.position}
+            </p>
+
+            <div className="text-sm text-slate-600 space-y-1">
+              <p>
+                <span className="font-semibold">DOB:</span>{" "}
+                {member.dob
+                  ? new Date(member.dob).toLocaleDateString()
+                  : "-"}
+              </p>
+
+              <p>
+                <span className="font-semibold">Joining Date:</span>{" "}
+                {member.joining_date
+                  ? new Date(member.joining_date).toLocaleDateString()
+                  : "-"}
+              </p>
             </div>
           </div>
-        )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
       </div>
 
       {/* ================= POPUP ================= */}
-      {showPopup && (
+      {showPopup && (popupType === "wfh" || popupType === "leave") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold mb-6">
@@ -613,6 +1179,212 @@ const EmployeeDashboard = () => {
         </div>
       )}
 
+      {showPopup && (popupType === "reimbursement") && (
+
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6">
+              Apply for Reimbursement
+            </h2>
+
+
+            <form
+              onSubmit={handleSubmitReimbursement}
+              className="space-y-5"
+            >
+              <div>
+                <label className="block mb-2 font-medium">
+                  Request For
+                </label>
+
+                <input
+                  type="text"
+                  name="requestFor"
+                  value={formData.requestFor}
+                  onChange={handleChange}
+                  placeholder="Cab, Mobile Bill etc."
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Amount (INR)
+                </label>
+
+                <input
+                  type="number"
+                  step="0.01"
+                  name="amountInr"
+                  value={formData.amountInr}
+                  onChange={handleChange}
+                  placeholder="1000.50"
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Request Date
+                </label>
+
+                <input
+                  type="date"
+                  name="requestDate"
+                  value={formData.requestDate}
+                  onChange={handleChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Reason
+                </label>
+
+                <textarea
+                  name="reason"
+                  value={formData.reason}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="Provide details for reimbursement request..."
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full font-semibold"
+                >
+                  Submit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={closePopup}
+                  className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 rounded-full font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+
+
+        </div>
+      )}
+
+      {showPopup && popupType === "compOff" && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6">
+              Apply for Comp Off / Office Duty
+            </h2>
+
+            <form
+              onSubmit={handleSubmitCompOff}
+              className="space-y-5"
+            >
+              <div>
+                <label className="block mb-2 font-medium">
+                  Comp Off / Office Duty From Date
+                </label>
+
+                <input
+                  type="date"
+                  name="fromDate"
+                  value={formData.fromDate}
+                  onChange={handleChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Comp Off / Office Duty To Date
+                </label>
+
+                <input
+                  type="date"
+                  name="toDate"
+                  value={formData.toDate}
+                  onChange={handleChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Original Leave / Comp Off From Date
+                </label>
+
+                <input
+                  type="date"
+                  name="originalFromDate"
+                  value={formData.originalFromDate}
+                  onChange={handleChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Original Leave / Comp Off To Date
+                </label>
+
+                <input
+                  type="date"
+                  name="originalToDate"
+                  value={formData.originalToDate}
+                  onChange={handleChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium">
+                  Reason
+                </label>
+
+                <textarea
+                  name="reason"
+                  value={formData.reason}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="Enter reason for Comp Off / Office Duty..."
+                  className="w-full border border-slate-300 rounded-xl p-3 resize-none"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-4 pt-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full font-semibold"
+                >
+                  Submit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={closePopup}
+                  className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 rounded-full font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* ================= CELEBRATION ================= */}
       {showCelebration && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">

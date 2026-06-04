@@ -183,12 +183,13 @@ function HistoryTable  ({
                   </td>
 
                   <td className="px-4 py-3">
-                    {item.status === "Pending" && (
+                    {(item.status === "Pending" || item.status === "9000001") ? 
+                    (
                       <div className="flex gap-2">
-                        <button
+                        <button style={{cursor: "pointer"}}
                           onClick={() =>
                             onAction(
-                              {leave_id: item.id, action: 9000001}
+                              {leave_id: item.id, action: 9000002}
                             )
                           }
                           className="px-3 py-1 bg-green-500 text-white rounded-lg"
@@ -196,10 +197,10 @@ function HistoryTable  ({
                           Accept
                         </button>
 
-                        <button
+                        <button style={{cursor: "pointer"}}
                           onClick={() =>
                             onAction(
-                             {leave_id: item.id, action: 9000002}
+                             {leave_id: item.id, action: 9000003}
                             )
                           }
                           className="px-3 py-1 bg-red-500 text-white rounded-lg"
@@ -207,6 +208,18 @@ function HistoryTable  ({
                           Reject
                         </button>
                       </div>
+                    ): item.status === "9000002" ? (
+                      <span className="">
+                        -
+                      </span>
+                    ): item.status === "9000003" ? (
+                      <span className="">
+                        {item.reject_reason}
+                      </span>
+                    ): (
+                      <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg">
+                        {item.status}
+                      </span>
                     )}
                   </td>
                 </tr>

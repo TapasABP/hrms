@@ -8,6 +8,7 @@ import {
 import axios from "axios";
 import { MAIN_API_URL } from "../../constants/global-variables";
 import { DEPARTMENTS, DESIGNATIONS, USERTYPES } from "../../contstants/application";
+import { toast, ToastContainer } from "react-toastify";
 
 const EmployeeOnboarding = () => {
     const [managerOptions, setManagerOptions] = useState([]);
@@ -57,7 +58,7 @@ const EmployeeOnboarding = () => {
             password: "",
             usertype: "",
         });
-console.log(employeeForm, "Employee form state");
+    console.log(employeeForm, "Employee form state");
     // ==========================
     // FETCH EMPLOYEES
     // ==========================
@@ -242,13 +243,13 @@ console.log(employeeForm, "Employee form state");
         const payload = {
             "manager_id": selectedValue, // This is the manager_id
             "org_id": userData.user.org_id,
-            "name": employeeForm.fullname,
-            "user_type": employeeForm.usertype.toString() || "20002", // Default to "Employee" if not selected
-            "email": employeeForm.username,
-            "password": employeeForm.password,
-            // "emp_code": employeeForm.emp_code,
-            "position": employeeForm.position,
-            "department": employeeForm.department,
+            "name": employeeForm?.fullname,
+            "user_type": employeeForm?.usertype.toString() || "20002", // Default to "Employee" if not selected
+            "email": employeeForm?.username,
+            "password": employeeForm?.password,
+            // "emp_code": employeeForm?.emp_code,
+            "position": employeeForm?.position,
+            "department": employeeForm?.department,
 
         }
         console.log("Adding employee with payload:", payload);
@@ -289,77 +290,38 @@ console.log(employeeForm, "Employee form state");
     // ==========================
     // BULK UPLOAD
     // ==========================
+    const handleBulkUpload = (e) => {
+        e.preventDefault();
 
-    const handleBulkUpload =
-        async (e) => {
-            e.preventDefault();
+        if (!bulkFile) {
+            alert("Please select a file");
+            return;
+        }
 
-            if (!bulkFile) {
-                alert(
-                    "Please select a file"
-                );
-                return;
-            }
 
-            try {
-                const userData =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "ZeroUserData"
-                        )
-                    );
 
-                const org_id =
-                    userData?.user?.org_id;
+        const formData = new FormData();
+        formData.append("file", bulkFile);
 
-                const formData =
-                    new FormData();
 
-                formData.append(
-                    "file",
-                    bulkFile
-                );
+        axios
+            .post(
+                `${MAIN_API_URL}/upload-employee-bulk`,
+                formData,
 
-                formData.append(
-                    "org_id",
-                    org_id
-                );
-
-                const res =
-                    await fetch(
-                        "http://localhost:3000/api/employees/bulk_upload",
-                        {
-                            method: "POST",
-                            body: formData,
-                        }
-                    );
-
-                const data =
-                    await res.json();
-
-                if (!res.ok) {
-                    alert(
-                        data.error ||
-                        "Bulk upload failed"
-                    );
-                    return;
-                }
-
-                alert(
-                    data.message ||
-                    "Bulk upload successful"
-                );
-
+            )
+            .then((res) => {
+                toast.success(res.data.message || "Bulk upload successful");
                 closeBulkUploadModal();
-
                 fetchEmployeesFromAPI();
-            } catch (err) {
+            })
+            .catch((err) => {
                 console.error(err);
-                alert(
-                    "Bulk upload failed"
-                );
-            }
-        };
+                const message =
+                    err.response?.data?.error || err.message || "Bulk upload failed";
+                alert(message);
+            });
+    };
 
     // ==========================
     // SORTING
@@ -384,7 +346,7 @@ console.log(employeeForm, "Employee form state");
     const editEmployee = (
         employee
     ) => {
-        
+
 
         navigate(
             `/view-employee?email=${employee.email}`
@@ -690,21 +652,21 @@ console.log(employeeForm, "Employee form state");
                                 className="w-full mb-3 px-4 py-2 border rounded"
                                 required
                             />
-                             { employeeForm.department == 1000001 &&  
-                             <select
-                                name="usertype"
-                                value={employeeForm.usertype}
-                                onChange={handleInputChange}
-                                className="w-full mb-3 px-4 py-2 border rounded bg-white text-gray-800"
-                                required
-                            >
-                                <option value="" disabled>Select User Type</option>
-                                {USERTYPES.map((type) => (
-                                    <option key={type.id} value={type.id}>
-                                        {type.value}
-                                    </option>
-                                ))}
-                            </select>}
+                            {employeeForm.department == 1000001 &&
+                                <select
+                                    name="usertype"
+                                    value={employeeForm.usertype}
+                                    onChange={handleInputChange}
+                                    className="w-full mb-3 px-4 py-2 border rounded bg-white text-gray-800"
+                                    required
+                                >
+                                    <option value="" disabled>Select User Type</option>
+                                    {USERTYPES.map((type) => (
+                                        <option key={type.id} value={type.id}>
+                                            {type.value}
+                                        </option>
+                                    ))}
+                                </select>}
 
                             <div className="flex justify-end gap-2">
                                 <button
@@ -778,6 +740,7 @@ console.log(employeeForm, "Employee form state");
                     </div>
                 </div>
             )}
+            <ToastContainer/>
         </div>
     );
 };

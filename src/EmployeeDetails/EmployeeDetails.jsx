@@ -4,6 +4,7 @@ import HistoryTable from "./HistoryTable";
 import { useParams } from "react-router-dom";
 import { MAIN_API_URL } from "../constants/global-variables";
 import { toast, ToastContainer } from "react-toastify";
+import { LEAVEAPPLYSTATUS } from "../contstants/application";
 
 const EmployeeDetails = () => {
     const userData = JSON.parse(localStorage.getItem("userData"));
@@ -28,8 +29,28 @@ const EmployeeDetails = () => {
     const openAddModal = (data) => {
         console.log(data, 'dattaaaaaaaa');
 
-        if (data.action === 9000001) {
-            handleLeaveWfhAccept({ leave_id: data.leave_id, action: 9000001 })
+        if (data.action === 9000002) {
+            handleLeaveWfhAccept({ leave_id: data.leave_id, action: 9000002 })
+        } else {
+            setShowAddModal(true);
+            setSelectedRow(data);
+        }
+    };
+    const openReimbursementModal = (data) => {
+        console.log(data, 'dattaaaaaaaa');
+
+        if (data.action === 9000002) {
+            handleReimbursementAccept({ leave_id: data.leave_id, action: 9000002 })
+        } else {
+            setShowAddModal(true);
+            setSelectedRow(data);
+        }
+    };
+    const openCompOffModal = (data) => {
+        console.log(data, 'dattaaaaaaaa');
+
+        if (data.action === 9000002) {
+            handleCompOffAccept({ leave_id: data.leave_id, action: 9000002 })
         } else {
             setShowAddModal(true);
             setSelectedRow(data);
@@ -50,23 +71,23 @@ const EmployeeDetails = () => {
 
 
         if (activeTab === "profile") {
-              loadEmployeeProfile();
+            loadEmployeeProfile();
         } else if (activeTab === "leave" || activeTab === "wfh") {
             loadLeaveWFHHistory();
         } else if (activeTab === "reimbursement") {
-            loadLeaveWFHHistory();
+            loadReimbursementHistory();
         } else if (activeTab === "compOff") {
-            loadLeaveWFHHistory();
+            loadCompOffHistory();
         }
     }, [activeTab]);
 
     const loadEmployeeProfile = () => {
         axios
             .post(
-                `${MAIN_API_URL}/employee/home-summary`,{ user_id: empId }, {
-                    "Content-Type": "application/json",
-                    headers: { Authorization: `Bearer ${token}` }
-                }
+                `${MAIN_API_URL}/employee/home-summary`, { user_id: empId }, {
+                "Content-Type": "application/json",
+                headers: { Authorization: `Bearer ${token}` }
+            }
             )
             .then((res) => {
                 setEmployee(res.data);
@@ -122,7 +143,48 @@ const EmployeeDetails = () => {
                 console.error(err);
             });
     };
+    const loadCompOffHistory = () => {
+        axios
+            .get(
+                `${MAIN_API_URL}/comp/comp-off-list/${empId}`, {
+                "Content-Type": "application/json",
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            )
+            .then((res) => {
+                const data = res.data;
+                console.log(data, 'comp-off history')
 
+                setCompOffHistory(
+                    data.data || []
+                );
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+    const loadReimbursementHistory = () => {
+        axios
+            .post(
+                `${MAIN_API_URL}/reimbursements/overview`, { user_id: empId }, {
+                "Content-Type": "application/json",
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            )
+            .then((res) => {
+                const data = res.data;
+                console.log(data, 'leave wfh history')
+
+                setReimbursementHistory(
+                    data.requests || []
+                );
+
+
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
     const updateLeaveAction = (
         endpoint,
         payload,
@@ -142,7 +204,8 @@ const EmployeeDetails = () => {
             });
     };
 
-    const handleLeaveWfhRejection = () => {
+    const handleLeaveWfhRejection = (e) => {
+        e.preventDefault();
         const payload = {
             leave_id: selectedRow.leave_id,
             action: selectedRow.action,
@@ -161,7 +224,8 @@ const EmployeeDetails = () => {
         )
             .then((response) => {
                 console.log("Success:", response.data);
-                toast.success(response.data.message || "Action updated successfully");
+                // toast.success(response.data.message || "Action updated successfully");
+                toast.success("Request rejected.")
                 closeAddModal();
                 loadLeaveWFHHistory();
             })
@@ -178,15 +242,15 @@ const EmployeeDetails = () => {
             });
     };
 
-    const handleLeaveWfhAccept = ({ leave_id, action }) => {
+    const handleReimbursementAccept = ({ leave_id, action }) => {
         const payload = {
-            leave_id: leave_id,
-            action: action,
-            reject_reason: ''
-        };
+            "reimbursement_id": leave_id,
+            "action": "Accepted",
+            "reject_reason": ""
+        }
 
         axios.post(
-            `${MAIN_API_URL}/leave/leave-action`,
+            `${MAIN_API_URL}/reimbursements/reimbursement-action`,
             payload,
             {
                 headers: {
@@ -199,7 +263,7 @@ const EmployeeDetails = () => {
                 console.log("Success:", response.data);
                 toast.success(response.data.message || "Action updated successfully");
                 closeAddModal();
-                loadLeaveWFHHistory();
+                loadReimbursementHistory();
             })
             .catch((error) => {
                 console.error("API Error:", error);
@@ -213,27 +277,114 @@ const EmployeeDetails = () => {
                 toast.error(message);
             });
     };
-
-    const handleReimbursementAction = (
-        id,
-        action
-    ) => {
-        let rejectReason = "";
-
-        if (action === "Rejected") {
-            rejectReason =
-                prompt("Enter rejection reason") || "";
+    const handleCompOffAccept = ({ leave_id, action }) => {
+        const payload = {
+            "comp_off_id": leave_id,
+            "action": "Accepted",
+            "reject_reason": ""
         }
 
-        updateLeaveAction(
-            "http://localhost:3000/api/employee/reimbursement-action",
+        axios.post(
+            `${MAIN_API_URL}/comp/comp-off-action`,
+            payload,
             {
-                reimbursement_id: id,
-                action,
-                reject_reason: rejectReason,
-            },
-            "Reimbursement updated"
-        );
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+            .then((response) => {
+                console.log("Success:", response.data);
+                // toast.success(response.data.message || "Action updated successfully");
+                toast.success("Request accepted.");
+                closeAddModal();
+                loadCompOffHistory();
+            })
+            .catch((error) => {
+                console.error("API Error:", error);
+
+                const message =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    error.message ||
+                    "Something went wrong";
+
+                toast.error(message);
+            });
+    };
+    const handleCompOffReject = (e) => {
+        e.preventDefault();
+        const payload = {
+            "comp_off_id": selectedRow.leave_id,
+            "action": "Rejected",
+            "reject_reason": reason
+        }
+
+        axios.post(
+            `${MAIN_API_URL}/comp/comp-off-action`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+            .then((response) => {
+                console.log("Success:", response.data);
+                // toast.success(response.data.message || "Action updated successfully");
+                toast.success("Request rejected.");
+                closeAddModal();
+                loadCompOffHistory();
+            })
+            .catch((error) => {
+                console.error("API Error:", error);
+
+                const message =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    error.message ||
+                    "Something went wrong";
+
+                toast.error(message);
+            });
+    };
+    const handleReimbursementReject = (e) => {
+        e.preventDefault();
+        const payload = {
+            "reimbursement_id": selectedRow?.leave_id,
+            "action": "Rejected",
+            "reject_reason": reason
+        }
+
+        axios.post(
+            `${MAIN_API_URL}/reimbursements/reimbursement-action`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+            .then((response) => {
+                console.log("Success:", response.data);
+                toast.success(response.data.message || "Action updated successfully");
+                closeAddModal();
+                loadReimbursementHistory();
+            })
+            .catch((error) => {
+                console.error("API Error:", error);
+
+                const message =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    error.message ||
+                    "Something went wrong";
+
+                toast.error(message);
+            });
     };
 
     const handleCompOffAction = (
@@ -257,14 +408,50 @@ const EmployeeDetails = () => {
             "Comp Off updated"
         );
     };
+    const handleLeaveWfhAccept = ({ leave_id, action }) => {
+        const payload = {
+            leave_id: leave_id,
+            action: action,
+            reject_reason: ''
+        };
 
+        axios.post(
+            `${MAIN_API_URL}/leave/leave-action`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+            .then((response) => {
+                console.log("Success:", response.data);
+                // toast.success(response.data.message || "Action updated successfully");
+                toast.success("Request accepted.")
+                // closeAddModal();
+                loadLeaveWFHHistory();
+            })
+            .catch((error) => {
+                console.error("API Error:", error);
+
+                const message =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    error.message ||
+                    "Something went wrong";
+
+                toast.error(message);
+            });
+    };
     const StatusChip = ({ status }) => {
+        console.log(status, 'statusss')
         const styles = {
-            Pending:
+            "9000001":
                 "bg-yellow-100 text-yellow-700",
-            Accepted:
+            "9000002":
                 "bg-green-100 text-green-700",
-            Rejected:
+            "9000003":
                 "bg-red-100 text-red-700",
         };
 
@@ -272,7 +459,7 @@ const EmployeeDetails = () => {
             <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status]}`}
             >
-                {status}
+                {LEAVEAPPLYSTATUS.find((s) => s.id == status)?.value || status}
             </span>
         );
     };
@@ -309,85 +496,85 @@ const EmployeeDetails = () => {
             <div className="p-8">
                 {activeTab === "profile" && (
                     // <>Profile</>
-                      <div className="bg-white rounded-2xl shadow-sm p-8 flex flex-col lg:flex-row gap-8">
+                    <div className="bg-white rounded-2xl shadow-sm p-8 flex flex-col lg:flex-row gap-8">
                         <div className="w-60 text-center">
-                          <img
-                            src={
-                              employee?.profile_photo ||
-                              (employee?.gender?.toLowerCase() ===
-                              "female"
-                                ? "https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-                                : "https://cdn-icons-png.flaticon.com/512/4140/4140061.png")
-                            }
-                            alt=""
-                            className="w-40 h-40 rounded-xl object-cover border mx-auto"
-                          />
+                            <img
+                                src={
+                                    employee?.profile_photo ||
+                                    (employee?.gender?.toLowerCase() ===
+                                        "female"
+                                        ? "https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
+                                        : "https://cdn-icons-png.flaticon.com/512/4140/4140061.png")
+                                }
+                                alt=""
+                                className="w-40 h-40 rounded-xl object-cover border mx-auto"
+                            />
 
-                          <h3 className="text-xl font-semibold mt-4">
-                            {employee?.fullname}
-                          </h3>
+                            <h3 className="text-xl font-semibold mt-4">
+                                {employee?.fullname}
+                            </h3>
 
-                          <p className="text-slate-600">
-                            {employee?.position}
-                          </p>
+                            <p className="text-slate-600">
+                                {employee?.position}
+                            </p>
 
-                          <p className="text-slate-500">
-                            {employee?.department}
-                          </p>
+                            <p className="text-slate-500">
+                                {employee?.department}
+                            </p>
                         </div>
 
                         <div className="flex-1 space-y-6">
-                          <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                              <p className="font-medium">
-                                Email
-                              </p>
-                              <p>{employee?.email}</p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <p className="font-medium">
+                                        Email
+                                    </p>
+                                    <p>{employee?.email}</p>
+                                </div>
+
+                                <div>
+                                    <p className="font-medium">
+                                        Mobile
+                                    </p>
+                                    <p>{employee?.mobile}</p>
+                                </div>
+
+                                <div>
+                                    <p className="font-medium">
+                                        DOB
+                                    </p>
+                                    <p>
+                                        {formatDate(employee?.dob)}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="font-medium">
+                                        Joining Date
+                                    </p>
+                                    <p>
+                                        {formatDate(
+                                            employee?.joining_date
+                                        )}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                              <p className="font-medium">
-                                Mobile
-                              </p>
-                              <p>{employee?.mobile}</p>
+                            <div className="bg-slate-50 border rounded-xl p-4">
+                                <h4 className="font-semibold mb-2">
+                                    About
+                                </h4>
+                                <p>{employee?.about || "-"}</p>
                             </div>
 
-                            <div>
-                              <p className="font-medium">
-                                DOB
-                              </p>
-                              <p>
-                                {formatDate(employee?.dob)}
-                              </p>
+                            <div className="bg-slate-50 border rounded-xl p-4">
+                                <h4 className="font-semibold mb-2">
+                                    Hobbies
+                                </h4>
+                                <p>{employee?.hobbies || "-"}</p>
                             </div>
-
-                            <div>
-                              <p className="font-medium">
-                                Joining Date
-                              </p>
-                              <p>
-                                {formatDate(
-                                  employee?.joining_date
-                                )}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="bg-slate-50 border rounded-xl p-4">
-                            <h4 className="font-semibold mb-2">
-                              About
-                            </h4>
-                            <p>{employee?.about || "-"}</p>
-                          </div>
-
-                          <div className="bg-slate-50 border rounded-xl p-4">
-                            <h4 className="font-semibold mb-2">
-                              Hobbies
-                            </h4>
-                            <p>{employee?.hobbies || "-"}</p>
-                          </div>
                         </div>
-                      </div>
+                    </div>
                 )
                 }
 
@@ -415,7 +602,7 @@ const EmployeeDetails = () => {
                     <HistoryTable
                         data={reimbursementHistory}
                         type="reimbursement"
-                        onAction={handleReimbursementAction}
+                        onAction={openReimbursementModal}
                         formatDate={formatDate}
                         StatusChip={StatusChip}
                     />
@@ -425,7 +612,7 @@ const EmployeeDetails = () => {
                     <HistoryTable
                         data={compOffHistory}
                         type="compOff"
-                        onAction={handleCompOffAction}
+                        onAction={openCompOffModal}
                         formatDate={formatDate}
                         StatusChip={StatusChip}
                     />
@@ -437,12 +624,15 @@ const EmployeeDetails = () => {
                 <div className="fixed inset-0 flex bg-black/50 justify-center items-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
                         <h2 className="text-lg font-semibold mb-4">
-                            Reject Leave/WFH
+                            {activeTab === "leave" || activeTab === "wfh"
+                                ? "Reject Leave/WFH"
+                                : (activeTab === "reimbursement") ? "Reject Reimbursement" : ""
+                            }
                         </h2>
 
                         <form
                             onSubmit={
-                                handleLeaveWfhRejection
+                                (activeTab === "leave" || activeTab === "wfh") ? handleLeaveWfhRejection : (activeTab === "reimbursement") ? handleReimbursementReject : handleCompOffReject
                             }
                         >
 
@@ -461,7 +651,7 @@ const EmployeeDetails = () => {
 
 
                             <div className="flex justify-end gap-2">
-                                <button
+                                <button style={{ cursor: "pointer" }}
                                     type="button"
                                     onClick={
                                         closeAddModal
@@ -471,7 +661,7 @@ const EmployeeDetails = () => {
                                     Cancel
                                 </button>
 
-                                <button
+                                <button style={{ cursor: "pointer" }}
                                     type="submit"
                                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                 >

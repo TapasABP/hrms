@@ -23,13 +23,13 @@ const Login = () => {
     const handleLogin = (e) => {
         e.preventDefault();
 
-        axios.post(`${MAIN_API_URL}/login`, {email : loginCredentials.username , password : loginCredentials.password})
+        axios.post(`${MAIN_API_URL}/login`, { email: loginCredentials.username, password: loginCredentials.password })
             .then((response) => {
                 console.log("Login successful:", response.data);
-                if(response.data.status){
+                if (response.data.status) {
                     localStorage.setItem("userData", JSON.stringify(response.data));
                     navigate("/hr-dashboard");
-                }else{
+                } else {
                     toast.error(response.data.message || "Login failed. Please try again.");
                 }
             })
@@ -41,9 +41,20 @@ const Login = () => {
 
     const handleResetPassword = () => {
         console.log("Password reset submitted");
-        axios.post(`${MAIN_API_URL}/api/reset-password`, resetCredentials)
+        const payload = {
+            "email": resetCredentials.username,
+            "current_password": resetCredentials.current_password,
+            "new_password": resetCredentials.new_password
+        }
+        axios.post(`${MAIN_API_URL}/reset-password`, payload)
             .then((response) => {
                 console.log("Password reset successful:", response.data);
+                if (response.data.status) {
+                    toast.success(response.data.message || "Password reset successful.");
+                    setShowReset(false);
+                } else {
+                    toast.error(response.data.message || "Password reset failed. Please try again.");
+                }
             })
             .catch((error) => {
                 console.error("Password reset error:", error);
@@ -117,7 +128,7 @@ const Login = () => {
                         >
                             Reset Password
                         </button>
-                        <ToastContainer />
+                        
                         <div className={styles['footer-text']}>
                             © 2026 ABP eVentures. All rights reserved.
                         </div>
@@ -202,9 +213,9 @@ const Login = () => {
                             ...inputStyle,
                             marginBottom: "24px",
                         }}
-                            name="confirm_password"
-                            value={resetCredentials.confirm_password}
-                            onChange={onResetPasswordChange}
+                        name="confirm_password"
+                        value={resetCredentials.confirm_password}
+                        onChange={onResetPasswordChange}
                     />
 
                     {/* Buttons */}
@@ -251,10 +262,10 @@ const Login = () => {
                         </button>
                     </div>
                 </div>
-                
-            </div>
-        
 
+            </div>
+
+          <ToastContainer />
         </>
     );
 
