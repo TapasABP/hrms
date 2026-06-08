@@ -92,7 +92,7 @@ function HistoryTable  ({
           </thead>
 
           <tbody>
-            {data.length === 0 ? (
+            {data?.length === 0 ? (
               <tr>
                 <td
                   colSpan={10}
@@ -102,7 +102,7 @@ function HistoryTable  ({
                 </td>
               </tr>
             ) : (
-              data.map((item) => (
+              data?.map((item) => (
                 <tr
                   key={item.id}
                   className="border-t"

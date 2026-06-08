@@ -2,43 +2,19 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MAIN_API_URL } from "../../constants/global-variables";
 import axios from "axios";
-import { DEPARTMENTS } from "../../contstants/application";
+import { DEPARTMENTS, LEAVEAPPLYSTATUS } from "../../contstants/application";
 
 const Reimbursements = () => {
-  const [reimbursements, setReimbursements] = useState([
-    {
-      "id": 22,
-      "user_id": 4,
-      "fullname": "Pappu Da",
-      "department": "1000002",
-      "request_for": "Internet bill 2121",
-      "amount_inr": "1222.00",
-      "request_date": "2026-06-19",
-      "status": "9000003",
-      "reject_reason": "not possible",
-      "created_at": "2026-06-04 08:19:07"
-    },
-    {
-      "id": 21,
-      "user_id": 4,
-      "fullname": "Pappu Da",
-      "department": "1000002",
-      "request_for": "Internet bill 2344",
-      "amount_inr": "670.00",
-      "request_date": "2026-06-18",
-      "status": "9000003",
-      "reject_reason": "Not logical for now.",
-      "created_at": "2026-06-04 08:08:44"
-    }]);
+  const [reimbursements, setReimbursements] = useState();
   const [departments, setDepartments] = useState([]);
   const [deptFilter, setDeptFilter] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState("");
   const [loading, setLoading] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
-  const [selectedReimbursement, setSelectedReimbursement] =
-    useState(null);
-
+  const [showModal, setShowModal] = useState(false);
+  const [requests, setRequests] = useState([])
   const userData = JSON.parse(
     localStorage.getItem("userData") || "{}"
   );
@@ -96,7 +72,10 @@ const Reimbursements = () => {
         return status;
     }
   };
-
+ const closeModal = () => {
+    setShowModal(false);
+    setRequests([])
+  };
   const getStatusClass = (status) => {
     switch (status) {
       case "9000001":
@@ -109,7 +88,7 @@ const Reimbursements = () => {
         return "bg-slate-100 text-slate-700";
     }
   };
-
+console.log(showModal,'showModal')
   const loadReimbursements = () => {
     setLoading(true);
 
@@ -160,6 +139,35 @@ const Reimbursements = () => {
       });
   };
 
+  const employeeReimbursementDetails = (userId) => {
+    setDetailsLoading(true);
+
+    axios
+      .get(
+        `${MAIN_API_URL}/reimbursements/reimbursements-list/${userId}`,
+
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+
+        setRequests(response.data.data)
+        setShowModal(true);
+      })
+      .catch((error) => {
+        console.error(
+          "Failed to load employee details:",
+          error
+        );
+      })
+      .finally(() => {
+        setDetailsLoading(false);
+      });
+  };
   useEffect(() => {
 
     loadReimbursements();
@@ -329,9 +337,9 @@ const Reimbursements = () => {
                       Loading...
                     </td>
                   </tr>
-                ) : reimbursements.length >
+                ) : reimbursements?.length >
                   0 ? (
-                  reimbursements.map(
+                  reimbursements?.map(
                     (item) => (
                       <tr
                         key={item.id}
@@ -383,8 +391,8 @@ const Reimbursements = () => {
                         <td className="p-3 text-center">
                           <button
                             onClick={() =>
-                              setSelectedReimbursement(
-                                item
+                              employeeReimbursementDetails(
+                                item.user_id
                               )
                             }
                             className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -412,122 +420,81 @@ const Reimbursements = () => {
         </div>
       </main>
 
-      {/* View Modal */}
-      {selectedReimbursement && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
-            <div className="flex justify-between items-center p-5 border-b">
-              <h2 className="text-lg font-semibold">
-                Reimbursement Details
-              </h2>
+      {
+        showModal && 
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+      <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[80vh] overflow-auto">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="text-lg font-medium">Request History</h3>
+          <button
+            onClick={closeModal}
+            className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+          >
+            &times;
+          </button>
+        </div>
 
-              <button
-                onClick={() =>
-                  setSelectedReimbursement(
-                    null
-                  )
-                }
-                className="text-slate-500 hover:text-slate-700 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div>
-                <span className="font-semibold">
-                  Employee:
-                </span>{" "}
-                {
-                  selectedReimbursement.fullname
-                }
-              </div>
-
-              <div>
-                <span className="font-semibold">
-                  Department:
-                </span>{" "}
-                {
-                  selectedReimbursement.department
-                }
-              </div>
-
-              <div>
-                <span className="font-semibold">
-                  Request For:
-                </span>{" "}
-                {
-                  selectedReimbursement.request_for
-                }
-              </div>
-
-              <div>
-                <span className="font-semibold">
-                  Amount:
-                </span>{" "}
-                ₹
-                {
-                  selectedReimbursement.amount_inr
-                }
-              </div>
-
-              <div>
-                <span className="font-semibold">
-                  Request Date:
-                </span>{" "}
-                {fmtDate(
-                  selectedReimbursement.request_date
+        {/* Modal Body */}
+        <div className="p-4">
+          <div className="overflow-auto max-h-[60vh] border rounded">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="p-2 text-left">Request For</th>
+                  <th className="p-2 text-left">Amount (INR)</th>
+                  <th className="p-2 text-left">Request Date</th>
+                  <th className="p-2 text-left">Status</th>
+                  <th className="p-2 text-left">Reject Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests?.length > 0 ? (
+                  requests.map((item) => (
+                    <tr key={item.id} className="border-b">
+                      <td className="p-2">{item.request_for}</td>
+                      <td className="p-2">{item.amount_inr}</td>
+                      <td className="p-2">{new Date(item.request_date).toLocaleDateString()}</td>
+                      <td className="p-2">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            item.status === "9000002"
+                              ? "bg-green-100 text-green-700"
+                              : item.status === "9000003"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {LEAVEAPPLYSTATUS.find((status) => status.id == item.status)?.value || item.status}
+                        </span>
+                      </td>
+                      <td className="p-2">{item.reject_reason || "-"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="p-6 text-center text-slate-500">
+                      No request history found
+                    </td>
+                  </tr>
                 )}
-              </div>
-
-              <div>
-                <span className="font-semibold">
-                  Status:
-                </span>{" "}
-                {getStatusLabel(
-                  selectedReimbursement.status
-                )}
-              </div>
-
-              {selectedReimbursement.reject_reason && (
-                <div>
-                  <span className="font-semibold">
-                    Reject Reason:
-                  </span>
-
-                  <div className="mt-1 p-3 bg-red-50 rounded-lg text-red-700">
-                    {
-                      selectedReimbursement.reject_reason
-                    }
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <span className="font-semibold">
-                  Created At:
-                </span>{" "}
-                {fmtDateTime(
-                  selectedReimbursement.created_at
-                )}
-              </div>
-            </div>
-
-            <div className="p-5 border-t flex justify-end">
-              <button
-                onClick={() =>
-                  setSelectedReimbursement(
-                    null
-                  )
-                }
-                className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700"
-              >
-                Close
-              </button>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
+
+        {/* Modal Footer */}
+        <div className="flex justify-end p-4 border-t">
+          <button
+            onClick={closeModal}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+      }
     </div>
   );
 };

@@ -426,7 +426,7 @@ const Attendance = () => {
               </div>
 
               {/* Modal Content */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div >
                 {/* Leave & WFH History */}
                 <div>
                   <h3 className="font-medium mb-2">Leave History</h3>

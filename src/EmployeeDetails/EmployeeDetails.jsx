@@ -131,13 +131,13 @@ const EmployeeDetails = () => {
                     ) || []
                 );
 
-                setReimbursementHistory(
-                    data.reimbursement_history || []
-                );
+                // setReimbursementHistory(
+                //     data.reimbursement_history || []
+                // );
 
-                setCompOffHistory(
-                    data.comp_off_history || []
-                );
+                // setCompOffHistory(
+                //     data.comp_off_history || []
+                // );
             })
             .catch((err) => {
                 console.error(err);
@@ -172,11 +172,11 @@ const EmployeeDetails = () => {
             }
             )
             .then((res) => {
-                const data = res.data.data;
-                console.log(data, 'leave wfh history')
+                const data = res.data;
+                console.log(data, 'ReimbursementHistory')
 
                 setReimbursementHistory(
-                    data || []
+                    data?.data || []
                 );
 
 
@@ -453,6 +453,8 @@ const EmployeeDetails = () => {
                 "bg-green-100 text-green-700",
             "9000003":
                 "bg-red-100 text-red-700",
+            "Pending":
+                "bg-yellow-100 text-yellow-700"
         };
 
         return (
@@ -496,85 +498,115 @@ const EmployeeDetails = () => {
             <div className="p-8">
                 {activeTab === "profile" && (
                     // <>Profile</>
-                    <div className="bg-white rounded-2xl shadow-sm p-8 flex flex-col lg:flex-row gap-8">
-                        <div className="w-60 text-center">
-                            <img
-                                src={
-                                    employee?.profile_photo ||
-                                    (employee?.gender?.toLowerCase() ===
-                                        "female"
-                                        ? "https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-                                        : "https://cdn-icons-png.flaticon.com/512/4140/4140061.png")
-                                }
-                                alt=""
-                                className="w-40 h-40 rounded-xl object-cover border mx-auto"
-                            />
+                    <div className="bg-white rounded-2xl shadow-sm p-8 max-w-4xl">
+            {/* Header */}
+            <div className="flex flex-wrap items-center gap-6 mb-8">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
+                alt="profile"
+                className="w-28 h-28 rounded-full"
+              />
 
-                            <h3 className="text-xl font-semibold mt-4">
-                                {employee?.fullname}
-                            </h3>
+              <div>
+                <h2 className="text-3xl font-bold">
+                  John Doe
+                </h2>
 
-                            <p className="text-slate-600">
-                                {employee?.position}
-                            </p>
+                <p className="text-slate-500 mt-1">
+                  Software Engineer
+                </p>
 
-                            <p className="text-slate-500">
-                                {employee?.department}
-                            </p>
-                        </div>
+                <p className="text-slate-400 text-sm mt-1">
+                  EMP001 | Engineering
+                </p>
+              </div>
+            </div>
 
-                        <div className="flex-1 space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <p className="font-medium">
-                                        Email
-                                    </p>
-                                    <p>{employee?.email}</p>
-                                </div>
+            {/* Contact */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-slate-100 p-5 rounded-xl">
+                <h4 className="text-sm text-slate-500">Email</h4>
+                <p className="font-semibold mt-1">
+                  john.doe@company.com
+                </p>
+              </div>
 
-                                <div>
-                                    <p className="font-medium">
-                                        Mobile
-                                    </p>
-                                    <p>{employee?.mobile}</p>
-                                </div>
+              <div className="bg-slate-100 p-5 rounded-xl">
+                <h4 className="text-sm text-slate-500">Phone</h4>
+                <p className="font-semibold mt-1">
+                  9876543210
+                </p>
+              </div>
+            </div>
 
-                                <div>
-                                    <p className="font-medium">
-                                        DOB
-                                    </p>
-                                    <p>
-                                        {formatDate(employee?.dob)}
-                                    </p>
-                                </div>
+            {/* Personal Information */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">
+                Personal Information
+              </h3>
 
-                                <div>
-                                    <p className="font-medium">
-                                        Joining Date
-                                    </p>
-                                    <p>
-                                        {formatDate(
-                                            employee?.joining_date
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Gender</p>
+                  <p className="font-medium">Male</p>
+                </div>
 
-                            <div className="bg-slate-50 border rounded-xl p-4">
-                                <h4 className="font-semibold mb-2">
-                                    About
-                                </h4>
-                                <p>{employee?.about || "-"}</p>
-                            </div>
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Date of Birth</p>
+                  <p className="font-medium">12 Aug 1995</p>
+                </div>
 
-                            <div className="bg-slate-50 border rounded-xl p-4">
-                                <h4 className="font-semibold mb-2">
-                                    Hobbies
-                                </h4>
-                                <p>{employee?.hobbies || "-"}</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Blood Group</p>
+                  <p className="font-medium">B+</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Marital Status</p>
+                  <p className="font-medium">Single</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
+                  <p className="text-sm text-slate-500">Address</p>
+                  <p className="font-medium">Kolkata, West Bengal</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Employment Information */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">
+                Employment Information
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Staff No</p>
+                  <p className="font-medium">EMP001</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Department</p>
+                  <p className="font-medium">Engineering</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Designation</p>
+                  <p className="font-medium">Software Engineer</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-sm text-slate-500">Date of Joining</p>
+                  <p className="font-medium">{employee?.joining_date || "N/A"}</p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
+                  <p className="text-sm text-slate-500">Reporting Manager</p>
+                  <p className="font-medium">{employee?.reporting_manager || "-"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
                 )
                 }
 

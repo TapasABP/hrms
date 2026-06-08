@@ -88,7 +88,7 @@ const Login = () => {
                 <div className={styles['login-right']}>
                     <div className={styles['login-box']}>
                         <div className={styles['logo']}>
-                            <img src={logo} alt="ZeroHR Logo" />
+                            <img src={logo} style={{margin:'auto'}} alt="ZeroHR Logo" />
                         </div>
 
                         <h2>Welcome Back!</h2>

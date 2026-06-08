@@ -47,7 +47,7 @@ const EmployeeOnboarding = () => {
             key: null,
             asc: true,
         });
-
+  const [loading, setLoading] = useState(false)
     const [employeeForm, setEmployeeForm] =
         useState({
             fullname: "",
@@ -294,7 +294,8 @@ const EmployeeOnboarding = () => {
         e.preventDefault();
 
         if (!bulkFile) {
-            alert("Please select a file");
+            // alert("Please select a file");
+            toast.error("Please uoload a file!")
             return;
         }
 
@@ -303,7 +304,7 @@ const EmployeeOnboarding = () => {
         const formData = new FormData();
         formData.append("file", bulkFile);
 
-
+       setLoading(true)
         axios
             .post(
                 `${MAIN_API_URL}/upload-employee-bulk`,
@@ -311,11 +312,13 @@ const EmployeeOnboarding = () => {
 
             )
             .then((res) => {
+                setLoading(false)
                 toast.success(res.data.message || "Bulk upload successful");
                 closeBulkUploadModal();
                 fetchEmployeesFromAPI();
             })
             .catch((err) => {
+                setLoading(fasle)
                 console.error(err);
                 const message =
                     err.response?.data?.error || err.message || "Bulk upload failed";
@@ -705,18 +708,29 @@ const EmployeeOnboarding = () => {
                                 handleBulkUpload
                             }
                         >
-                            <input
-                                type="file"
-                                accept=".xlsx,.xls"
-                                onChange={(e) =>
-                                    setBulkFile(
-                                        e.target
-                                            .files[0]
-                                    )
-                                }
-                                className="w-full mb-4"
-                                required
-                            />
+                            <div className="mb-4">
+                                <input
+                                    id="bulkFile"
+                                    type="file"
+                                    accept=".xlsx,.xls, .csv"
+                                    onChange={(e) => setBulkFile(e.target.files?.[0] || null)}
+                                    className="hidden"
+                                    
+                                />
+
+                                <label
+                                    htmlFor="bulkFile"
+                                    className="inline-block px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+                                >
+                                    Choose File
+                                </label>
+
+                                {bulkFile ? (
+                                    <p className="mt-2 text-sm text-gray-600">
+                                        {bulkFile?.name }
+                                    </p>
+                                ):"No file choosen"}
+                            </div>
 
                             <div className="flex justify-end gap-2">
                                 <button
@@ -730,17 +744,17 @@ const EmployeeOnboarding = () => {
                                 </button>
 
                                 <button
-                                    type="submit"
+                                    type="submit"  disabled={loading}
                                     className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
                                 >
-                                    Upload
+                                    { loading ? "Uploading..." : "Upload" } 
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 };

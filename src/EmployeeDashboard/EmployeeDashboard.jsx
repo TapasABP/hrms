@@ -143,7 +143,7 @@ const EmployeeDashboard = () => {
             });
 
             setleaveData(leaveData.history || []);
-
+        console.log(compOffResponse.data.data,'compOffResponse')
             // Comp Off Data
             setCompOffData(
               compOffResponse.data.data || []
@@ -739,15 +739,21 @@ const EmployeeDashboard = () => {
                                 : "Rejected"
                             }
                         </td> */}
-                        <td className={`p-4 font-semibold ${leave.status === "Rejected"
-                          ? "text-blue-600"
-                          : leave.status === "Pending"
-                            ? "text-yellow-600"
-                            : leave.status === "Approved"
-                              ? "text-green-600"
-                              : "text-red-600"
+                        <td className={`p-4 font-semibold ${(leave.status === "9000001" || leave.status === "Pending")
+                          ? "text-yellow-600"
+                          : leave.status === "9000002"
+                            ? "text-green-600"
+                            : leave.status === "9000003"
+                              ? "text-red-600"
+                              : ""
                           }`}>
-                          {LEAVEAPPLYSTATUS.find(item => item.id == leave.status)?.value}
+                          {leave.status === "9000001"
+                            ? "Pending"
+                            : leave.status === "9000002"
+                              ? "Approved"
+                              : leave.status === "9000003"
+                                ? "Rejected"
+                                : leave.status}
                         </td>
                       </tr>
                     ))
@@ -801,15 +807,21 @@ const EmployeeDashboard = () => {
                                 : "Rejected"
                             }
                         </td> */}
-                        <td className={`p-4 font-semibold ${leave.status === "Rejected"
-                          ? "text-blue-600"
-                          : leave.status === "Pending"
-                            ? "text-yellow-600"
-                            : leave.status === "Approved"
-                              ? "text-green-600"
-                              : "text-red-600"
+                        <td className={`p-4 font-semibold ${(leave.status === "9000001" || leave.status === "Pending")
+                          ? "text-yellow-600"
+                          : leave.status === "9000002"
+                            ? "text-green-600"
+                            : leave.status === "9000003"
+                              ? "text-red-600"
+                              : ""
                           }`}>
-                          {LEAVEAPPLYSTATUS.find(item => item.id == leave.status)?.value}
+                          {leave.status === "9000001"
+                            ? "Pending"
+                            : leave.status === "9000002"
+                              ? "Approved"
+                              : leave.status === "9000003"
+                                ? "Rejected"
+                                : leave.status}
                         </td>
                       </tr>
                     ))
