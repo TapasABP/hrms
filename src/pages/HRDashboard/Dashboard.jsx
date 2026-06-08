@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Receipt,
   BarChart3,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -45,6 +46,12 @@ const modules = [
     title: "Analytics",
     icon: BarChart3,
     page: "/analytics",
+    iconColor: "text-pink-500",
+  },
+  {
+    title: "Log in as Employee",
+    icon: Users,
+    page: "/employee-dashboard",
     iconColor: "text-pink-500",
   },
 ];

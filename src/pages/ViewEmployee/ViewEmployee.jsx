@@ -134,7 +134,7 @@ const ViewEmployee = () => {
   const handleSave = () => {
     // 1. Build Payload mapping string values cleanly to numbers where required
     const payload = {
-      actor_email: employeeData.email, // Fallback text value for validation checks
+      actor_email: userData?.user.email, // Fallback text value for validation checks
       actor_user_type: Number(userData?.user?.user_type),
       employee_id: Number(employeeData.id),
       fullname: employeeData.fullname,

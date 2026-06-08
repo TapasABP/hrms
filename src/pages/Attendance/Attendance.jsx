@@ -70,16 +70,49 @@ const Attendance = () => {
     if (!date) return "";
     return date.toISOString().split("T")[0];
   };
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState("");
 
+  const currentYear = new Date().getFullYear();
+
+  const years = Array.from(
+    { length: 11 },
+    (_, index) => currentYear - index
+  );
+
+  const months = [
+    { value: "1", label: "January" },
+    { value: "2", label: "February" },
+    { value: "3", label: "March" },
+    { value: "4", label: "April" },
+    { value: "5", label: "May" },
+    { value: "6", label: "June" },
+    { value: "7", label: "July" },
+    { value: "8", label: "August" },
+    { value: "9", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const handleYearChange = (e) => {
+    setYear(e.target.value);
+  };
+
+  const handleMonthChange = (e) => {
+    setMonth(e.target.value);
+  };
   const loadAttendance = () => {
 
     setLoading(true);
 
     const payload = {
 
-      from_date: formatApiDate(fromDate),
-      to_date: formatApiDate(toDate),
+      // from_date: formatApiDate(fromDate),
+      // to_date: formatApiDate(toDate),
       department: deptFilter || undefined,
+      year:year?.toString(),
+      month:month
     };
 
     axios
@@ -178,29 +211,7 @@ const Attendance = () => {
             }]
         );
         setCompOffHistory(
-          response.data?.comp_off_history || [
-            {
-              "id": 12,
-              "leave_wfh": "7000001",
-              "from_date": "2026-05-28",
-              "to_date": "2026-05-29",
-              "duration": "6000001",
-              "type": "5000002",
-              "reason": "Medical emergency",
-              "status": "Pending",
-              "created_at": "2026-05-29 08:12:38"
-            },
-            {
-              "id": 11,
-              "leave_wfh": "7000002",
-              "from_date": "2026-05-28",
-              "to_date": "2026-05-29",
-              "duration": "6000002",
-              "type": "5000001",
-              "reason": "Medical emergency",
-              "status": "Pending",
-              "created_at": "2026-05-29 08:12:38"
-            }]
+          response.data?.comp_off_history || []
         );
         setShowModal(true);
       })
@@ -235,42 +246,83 @@ const Attendance = () => {
         <div className="bg-white rounded-xl shadow p-4 mb-6">
           <h2 className="font-semibold mb-3">Filters</h2>
           <div className="grid md:grid-cols-4 gap-3">
-            {/* From Date */}
-            <DatePicker
+
+            {/* <DatePicker
               selected={fromDate}
               onChange={(date) => setFromDate(date)}
               placeholderText="From Date"
               dateFormat="yyyy-MM-dd"
               className="w-full border rounded p-2 text-sm"
             />
-            {/* To Date */}
+            
             <DatePicker
               selected={toDate}
               onChange={(date) => setToDate(date)}
               placeholderText="To Date"
               dateFormat="yyyy-MM-dd"
               className="w-full border rounded p-2 text-sm"
-            />
-            {/* Department */}
-            <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(Number(e.target.value))}
-              className="w-full border rounded p-2 text-sm"
-            >
-              <option value="">All Departments</option>
-              {DEPARTMENTS.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.value}
-                </option>
-              ))}
-            </select>
-            {/* Apply */}
-            <button
+            /> */}
+            
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Year
+                </label>
+                <select
+                  value={year}
+                  onChange={handleYearChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                >
+                  {years.map((yr) => (
+                    <option key={yr} value={yr}>
+                      {yr}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Month
+                </label>
+                <select
+                  value={month}
+                  onChange={handleMonthChange}
+                  className="w-full border border-slate-300 rounded-xl p-3"
+                >
+                  <option value="">Select Month</option>
+                  {months.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Department
+              </label>
+              <select
+                value={deptFilter}
+                onChange={(e) => setDeptFilter(Number(e.target.value))}
+                className="w-full border border-slate-300 rounded-xl p-3"
+              >
+                <option value="">All Departments</option>
+                {DEPARTMENTS.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.value}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
               onClick={loadAttendance}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-8 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Apply
             </button>
+            </div>
           </div>
         </div>
 
@@ -387,6 +439,7 @@ const Attendance = () => {
                           <th className="p-2 text-left">Duration</th>
                           <th className="p-2 text-left">Reason</th>
                           <th className="p-2 text-left">Status</th>
+                          <th className="p-2 text-left">Rejection Reason</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -409,6 +462,7 @@ const Attendance = () => {
                                   {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
                                 </span>
                               </td>
+                              <td className="p-2">{item.reject_reason || "N/A"}</td>
                             </tr>
                           ))
                         ) : (
@@ -422,6 +476,7 @@ const Attendance = () => {
                     </table>
                   </div>
                 </div>
+                <br/>
                 <div>
                   <h3 className="font-medium mb-2">WFH History</h3>
                   <div className="overflow-auto max-h-[400px] border rounded">
@@ -468,6 +523,7 @@ const Attendance = () => {
                     </table>
                   </div>
                 </div>
+                <br/>
                 {/* Comp Off History */}
                 <div>
                   <h3 className="font-medium mb-2">Comp Off History</h3>

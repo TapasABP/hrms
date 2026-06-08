@@ -165,18 +165,18 @@ const EmployeeDetails = () => {
     };
     const loadReimbursementHistory = () => {
         axios
-            .post(
-                `${MAIN_API_URL}/reimbursements/overview`, { user_id: empId }, {
+            .get(
+                `${MAIN_API_URL}/reimbursements/reimbursements-list/${empId}`, {
                 "Content-Type": "application/json",
                 headers: { Authorization: `Bearer ${token}` }
             }
             )
             .then((res) => {
-                const data = res.data;
+                const data = res.data.data;
                 console.log(data, 'leave wfh history')
 
                 setReimbursementHistory(
-                    data.requests || []
+                    data || []
                 );
 
 

@@ -169,14 +169,14 @@ const Analytics = () => {
             <h3 className="font-semibold mb-2">Headcount per Department</h3>
             <canvas ref={departmentRef} />
           </div>
-          <div className="bg-white shadow rounded-lg p-4">
+          {/* <div className="bg-white shadow rounded-lg p-4">
             <h3 className="font-semibold mb-2">Exit Reasons</h3>
             {data?.exitReasons.length === 0 ? (
               <p className="text-gray-500">No exit reasons recorded.</p>
             ) : (
               <canvas ref={exitRef} />
             )}
-          </div>
+          </div> */}
         </div>
       </main>
     </div>

@@ -469,7 +469,7 @@ const EmployeeDashboard = () => {
                     userData?.birthdays?.length > 0 ? (
                       userData.birthdays.map((birthday) => (
                         <div key={birthday.id} className="bg-slate-50 rounded-xl p-4">
-                          {birthday.name}
+                          {birthday.fullname}
                         </div>
                       ))
                     ) : (
@@ -613,12 +613,12 @@ const EmployeeDashboard = () => {
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Date of Joining</p>
-                  <p className="font-medium">{userData?.date_of_joining || "N/A"}</p>
+                  <p className="font-medium">{userData?.joining_date || "N/A"}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
                   <p className="text-sm text-slate-500">Reporting Manager</p>
-                  <p className="font-medium">{userData?.reporting_manager || "N/A"}</p>
+                  <p className="font-medium">{userData?.reporting_manager || "-"}</p>
                 </div>
               </div>
             </div>
@@ -1029,7 +1029,7 @@ const EmployeeDashboard = () => {
               {member.position}
             </p>
 
-            <div className="text-sm text-slate-600 space-y-1">
+            {/* <div className="text-sm text-slate-600 space-y-1">
               <p>
                 <span className="font-semibold">DOB:</span>{" "}
                 {member.dob
@@ -1043,7 +1043,7 @@ const EmployeeDashboard = () => {
                   ? new Date(member.joining_date).toLocaleDateString()
                   : "-"}
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       ))}
@@ -1321,7 +1321,7 @@ const EmployeeDashboard = () => {
 
               <div>
                 <label className="block mb-2 font-medium">
-                  Original Leave / Comp Off From Date
+                  Original Leave From Date
                 </label>
 
                 <input
@@ -1336,7 +1336,7 @@ const EmployeeDashboard = () => {
 
               <div>
                 <label className="block mb-2 font-medium">
-                  Original Leave / Comp Off To Date
+                  Original Leave To Date
                 </label>
 
                 <input

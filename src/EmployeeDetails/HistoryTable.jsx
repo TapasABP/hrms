@@ -22,6 +22,9 @@ function HistoryTable  ({
                   <th className="px-4 py-3 text-left">Reason</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Action</th>
+                   <th className="px-4 py-3 text-left">
+                    Reject Reason
+                  </th>
                 </>
               )}
 
@@ -32,6 +35,9 @@ function HistoryTable  ({
                   <th className="px-4 py-3 text-left">Reason</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Action</th>
+                   <th className="px-4 py-3 text-left">
+                    Reject Reason
+                  </th>
                 </>
               )}
 
@@ -51,6 +57,9 @@ function HistoryTable  ({
                   </th>
                   <th className="px-4 py-3 text-left">
                     Action
+                  </th>
+                   <th className="px-4 py-3 text-left">
+                    Reject Reason
                   </th>
                 </>
               )}
@@ -73,6 +82,9 @@ function HistoryTable  ({
                   </th>
                   <th className="px-4 py-3 text-left">
                     Action
+                  </th>
+                  <th className="px-4 py-3 text-left">
+                    Reject Reason
                   </th>
                 </>
               )}
@@ -214,7 +226,7 @@ function HistoryTable  ({
                       </span>
                     ): item.status === "9000003" ? (
                       <span className="">
-                        {item.reject_reason}
+                        -
                       </span>
                     ): (
                       <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg">
@@ -222,6 +234,11 @@ function HistoryTable  ({
                       </span>
                     )}
                   </td>
+
+                  <td className="px-4 py-3">
+                    {item.reject_reason}
+                  </td>
+
                 </tr>
               ))
             )}
