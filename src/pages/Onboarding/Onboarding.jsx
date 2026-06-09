@@ -365,7 +365,7 @@ const EmployeeOnboarding = () => {
                 </h1>
 
                 <div className="flex items-center space-x-4">
-                    <button
+                    <button style={{cursor:'pointer'}}
                         onClick={openAddModal}
                         className="flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
                     >
@@ -375,7 +375,7 @@ const EmployeeOnboarding = () => {
                         </span>
                     </button>
 
-                    <button
+                    <button style={{cursor:'pointer'}}
                         onClick={
                             openBulkUploadModal
                         }
@@ -387,7 +387,7 @@ const EmployeeOnboarding = () => {
                         </span>
                     </button>
 
-                    <button
+                    <button style={{cursor:'pointer'}}
                         onClick={() =>
                             navigate(
                                 "/hr-dashboard"
@@ -422,8 +422,9 @@ const EmployeeOnboarding = () => {
                         <option value="">
                             All Departments
                         </option>
-                        <option>Tech</option>
-                        <option>Product</option>
+                        <option>IT</option>
+                        <option>Renewal</option>
+                        <option>Marketing</option>
                         <option>HR</option>
                         <option>Sales</option>
                     </select>
@@ -510,13 +511,14 @@ const EmployeeOnboarding = () => {
                                         </td>
 
                                         <td className="border px-4 py-2">
-                                            {DESIGNATIONS.find(
+                                            {/* {DESIGNATIONS.find(
                                                 (role) => role.id == emp.position
-                                            )?.value || "N/A"}
+                                            )?.value || "N/A"} */}
+                                            {emp.position}
                                         </td>
 
                                         <td className="border px-4 py-2">
-                                            <button
+                                            <button style={{cursor:'pointer'}}
                                                 onClick={() =>
                                                     editEmployee(
                                                         emp
@@ -613,7 +615,7 @@ const EmployeeOnboarding = () => {
                                 ))}
                             </select>
 
-                            <select
+                            {/* <select
                                 name="position"
                                 value={employeeForm.position}
                                 onChange={handleInputChange}
@@ -626,8 +628,20 @@ const EmployeeOnboarding = () => {
                                         {role.value}
                                     </option>
                                 ))}
-                            </select>
-
+                            </select> */}
+                            <input
+                                type="text"
+                                name="position"
+                                placeholder="Designation"
+                                value={
+                                    employeeForm.position
+                                }
+                                onChange={
+                                    handleInputChange
+                                }
+                                className="w-full mb-3 px-4 py-2 border rounded"
+                                required
+                            />
                             <input
                                 type="text"
                                 name="username"
@@ -672,7 +686,7 @@ const EmployeeOnboarding = () => {
                                 </select>}
 
                             <div className="flex justify-end gap-2">
-                                <button
+                                <button style={{cursor:'pointer'}}
                                     type="button"
                                     onClick={
                                         closeAddModal
@@ -682,7 +696,7 @@ const EmployeeOnboarding = () => {
                                     Cancel
                                 </button>
 
-                                <button
+                                <button style={{cursor:'pointer'}}
                                     type="submit"
                                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                 >

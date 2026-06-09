@@ -316,7 +316,7 @@ const Attendance = () => {
               </select>
             </div>
             <div className="flex items-end">
-              <button
+              <button style={{cursor:'pointer'}}
               onClick={loadAttendance}
               className="px-8 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
@@ -357,13 +357,13 @@ const Attendance = () => {
                   attendanceData.map((emp) => (
                     <tr key={emp.user_id} className="border-b hover:bg-slate-50" >
                       <td className="p-3">{emp.user_id}</td>
-                      <td className="p-3 font-medium">{emp.fullname}</td>
+                      <td className="p-2 font-medium">{emp.fullname}</td>
                       <td className="p-3">{DEPARTMENTS.find(dept => dept.id == emp.department)?.value || "Unknown"}</td>
                       <td className="p-3">{emp.leave_count}</td>
                       <td className="p-3">{emp.wfh_count}</td>
                       <td className="p-3">{emp.comp_off_count}</td>
-                      <td className="p-3 text-center">
-                        <button
+                      <td className="p-2 text-center">
+                        <button style={{cursor:'pointer'}}
                           onClick={() =>
                             loadEmployeeDetails(
                               emp.user_id,
@@ -410,14 +410,14 @@ const Attendance = () => {
         </div>
         {/* History Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-xl shadow-xl w-[95%] max-w-5xl p-6">
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center overflow-y-auto z-50 p-4">
+          <div class="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl my-8 max-h-[80vh] overflow-y-auto">
               {/* Modal Header */}
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">
                   {selectedEmployeeName} - Attendance History
                 </h2>
-                <button
+                <button style={{cursor:'pointer'}}
                   onClick={closeModal}
                   className="px-3 py-1 bg-slate-700 text-white rounded"
                 >
@@ -463,12 +463,13 @@ const Attendance = () => {
                                 </span>
                               </td>
                               <td className="p-2">{item.reject_reason || "N/A"}</td>
+                              
                             </tr>
                           ))
                         ) : (
                           <tr>
                             <td colSpan="6" className="p-6 text-center text-slate-500">
-                              No Leave/WFH history found
+                              No Leave history found
                             </td>
                           </tr>
                         )}
@@ -488,6 +489,7 @@ const Attendance = () => {
                           <th className="p-2 text-left">Duration</th>
                           <th className="p-2 text-left">Reason</th>
                           <th className="p-2 text-left">Status</th>
+                          <th className="p-2 text-left">Rejection Reason</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -510,12 +512,13 @@ const Attendance = () => {
                                   {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
                                 </span>
                               </td>
+                              <td className="p-2">{item.reject_reason || "N/A"}</td>
                             </tr>
                           ))
                         ) : (
                           <tr>
                             <td colSpan="6" className="p-6 text-center text-slate-500">
-                              No Leave/WFH history found
+                              No WFH history found
                             </td>
                           </tr>
                         )}
@@ -535,6 +538,7 @@ const Attendance = () => {
                           <th className="p-2 text-left">To</th>
                           <th className="p-2 text-left">Reason</th>
                           <th className="p-2 text-left">Status</th>
+                          <th className="p-2 text-left">Rejection Reason</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -556,6 +560,7 @@ const Attendance = () => {
                                   {LEAVEAPPLYSTATUS.find(status => status.id == item.status)?.value || item.status}
                                 </span>
                               </td>
+                              <td className="p-2">{item.reject_reason || "N/A"}</td>
                             </tr>
                           ))
                         ) : (

@@ -279,7 +279,7 @@ console.log(showModal,'showModal')
 
             {/* Apply */}
             <div>
-              <button
+              <button style={{cursor:'pointer'}}
                 onClick={
                   loadReimbursements
                 }
@@ -353,7 +353,7 @@ console.log(showModal,'showModal')
 
                         <td className="p-3">
                           {
-                            item.department
+                            DEPARTMENTS.find((dpt,index)=> dpt.id == item.department)?.value 
                           }
                         </td>
 
@@ -389,7 +389,7 @@ console.log(showModal,'showModal')
                         </td>
 
                         <td className="p-3 text-center">
-                          <button
+                          <button style={{cursor :'pointer'}}
                             onClick={() =>
                               employeeReimbursementDetails(
                                 item.user_id
@@ -445,7 +445,7 @@ console.log(showModal,'showModal')
                   <th className="p-2 text-left">Amount (INR)</th>
                   <th className="p-2 text-left">Request Date</th>
                   <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Reject Reason</th>
+                  <th className="p-2 text-left">Rejection Reason</th>
                 </tr>
               </thead>
               <tbody>
@@ -485,7 +485,7 @@ console.log(showModal,'showModal')
 
         {/* Modal Footer */}
         <div className="flex justify-end p-4 border-t">
-          <button
+          <button style={{cursor:'pointer'}}
             onClick={closeModal}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >

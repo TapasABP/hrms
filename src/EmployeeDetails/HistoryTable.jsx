@@ -23,7 +23,7 @@ function HistoryTable  ({
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Action</th>
                    <th className="px-4 py-3 text-left">
-                    Reject Reason
+                    Rejection Reason
                   </th>
                 </>
               )}
@@ -36,7 +36,7 @@ function HistoryTable  ({
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Action</th>
                    <th className="px-4 py-3 text-left">
-                    Reject Reason
+                    Rejection  Reason
                   </th>
                 </>
               )}
@@ -59,7 +59,7 @@ function HistoryTable  ({
                     Action
                   </th>
                    <th className="px-4 py-3 text-left">
-                    Reject Reason
+                    Rejection Reason
                   </th>
                 </>
               )}
@@ -84,7 +84,7 @@ function HistoryTable  ({
                     Action
                   </th>
                   <th className="px-4 py-3 text-left">
-                    Reject Reason
+                    Rejection Reason
                   </th>
                 </>
               )}

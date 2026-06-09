@@ -8,7 +8,7 @@ import { DEPARTMENTS } from "../../contstants/application";
 const ViewEmployee = () => {
   const [searchParams] = useSearchParams();
   const userEmail = searchParams.get("email");
-  
+
   const userData = JSON.parse(localStorage.getItem("userData"));
   const token = userData?.token;
   const loggedIn = JSON.parse(localStorage.getItem("ZeroUserData") || "{}");
@@ -36,7 +36,7 @@ const ViewEmployee = () => {
     dob: "",
     address: "",
     exit_date: "",
-    id:"",
+    id: "",
     pending_casual_leaves: 0,
     pending_sick_leaves: 0,
     pending_earned_leaves: 0,
@@ -61,10 +61,11 @@ const ViewEmployee = () => {
         .then((response) => {
           console.log("Employee details response:", response);
           if (response.data) {
-            const data = response.data;
-           console.log(data.department, "Department value from API");
+            const data = response.data.employee;
+            const leaveHistory = response.data.leave_master;
+            console.log(data, "Department value from API");
             setEmployeeData({
-              id:data.id,
+              id: data.id,
               fullname: data.fullname || "",
               department: data.department || "",
               emp_code: data.emp_code || "",
@@ -88,12 +89,12 @@ const ViewEmployee = () => {
                 ? String(data.exit_date).split("T")[0]
                 : "",
 
-              pending_casual_leaves: data.pending_casual_leaves || 0,
-              pending_sick_leaves: data.pending_sick_leaves || 0,
-              pending_earned_leaves: data.pending_earned_leaves || 0,
-              fy_casual_leaves: data.fy_casual_leaves || 0,
-              fy_sick_leaves: data.fy_sick_leaves || 0,
-              fy_earned_leaves: data.fy_earned_leaves || 0,
+              pending_casual_leaves: leaveHistory.pending_casual_leaves || 0,
+              pending_sick_leaves: leaveHistory.pending_sick_leaves || 0,
+              pending_earned_leaves: leaveHistory.pending_earned_leaves || 0,
+              fy_casual_leaves: leaveHistory.fy_casual_leaves || 0,
+              fy_sick_leaves: leaveHistory.fy_sick_leaves || 0,
+              fy_earned_leaves: leaveHistory.fy_earned_leaves || 0,
             });
           }
         })
@@ -161,17 +162,17 @@ const ViewEmployee = () => {
         Authorization: `Bearer ${token}`
       }
     })
-    .then((response) => {
-      // alert("Employee details updated successfully!");
-      navigate("/onboarding")
-      console.log("Update Success Response:", response.data);
-    })
-    .catch((err) => {
-      console.error("Error saving employee details:", err.response.data);
-      alert(err.response?.data?.error || "Failed to update employee information.");
-    });
+      .then((response) => {
+        // alert("Employee details updated successfully!");
+        navigate("/onboarding")
+        console.log("Update Success Response:", response.data);
+      })
+      .catch((err) => {
+        console.error("Error saving employee details:", err.response.data);
+        alert(err.response?.data?.error || "Failed to update employee information.");
+      });
   };
-  
+
 
   if (loading) {
     return (

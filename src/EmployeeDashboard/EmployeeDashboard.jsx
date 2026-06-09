@@ -3,7 +3,7 @@ import React, { use, useEffect, useState } from "react";
 import { MAIN_API_URL } from "../constants/global-variables";
 import logo from "./../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-import { LEAVEAPPLYSTATUS, LEAVEDURATION, LEAVETYPES } from "../contstants/application";
+import { DEPARTMENTS, LEAVEAPPLYSTATUS, LEAVEDURATION, LEAVETYPES } from "../contstants/application";
 import { toast, ToastContainer } from "react-toastify";
 const EmployeeDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
@@ -486,9 +486,19 @@ const EmployeeDashboard = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="bg-slate-50 rounded-xl p-4">
-                    Tapas Dey
-                  </div>
+                 {
+                    userData?.leave_today?.length > 0 ? (
+                      userData.leave_today.map((leave) => (
+                        <div key={leave.id} className="bg-slate-50 rounded-xl p-4">
+                          {leave.fullname}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="bg-slate-50 rounded-xl p-4">
+                        No One is On Leave Today
+                      </div>
+                    )
+                  }
 
                   
                 </div>
@@ -525,15 +535,16 @@ const EmployeeDashboard = () => {
 
               <div>
                 <h2 className="text-3xl font-bold">
-                  John Doe
+                  {userData?.fullname}
                 </h2>
 
                 <p className="text-slate-500 mt-1">
-                  Software Engineer
+                  {userData?.position}
                 </p>
 
                 <p className="text-slate-400 text-sm mt-1">
-                  EMP001 | Engineering
+                  {userData?.emp_code} 
+                  {/* | Engineering */}
                 </p>
               </div>
             </div>
@@ -543,14 +554,14 @@ const EmployeeDashboard = () => {
               <div className="bg-slate-100 p-5 rounded-xl">
                 <h4 className="text-sm text-slate-500">Email</h4>
                 <p className="font-semibold mt-1">
-                  john.doe@company.com
+                  {userData?.email || "-"}
                 </p>
               </div>
 
               <div className="bg-slate-100 p-5 rounded-xl">
                 <h4 className="text-sm text-slate-500">Phone</h4>
                 <p className="font-semibold mt-1">
-                  9876543210
+                  {userData?.employee?.mobile || "-"}
                 </p>
               </div>
             </div>
@@ -564,27 +575,27 @@ const EmployeeDashboard = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Gender</p>
-                  <p className="font-medium">Male</p>
+                  <p className="font-medium">{userData?.employee?.gender}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Date of Birth</p>
-                  <p className="font-medium">12 Aug 1995</p>
+                  <p className="font-medium">{userData?.employee?.dob}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Blood Group</p>
-                  <p className="font-medium">B+</p>
+                  <p className="font-medium">{userData?.employee?.blood_group || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Marital Status</p>
-                  <p className="font-medium">Single</p>
+                  <p className="font-medium">{userData?.employee?.marital_status || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
                   <p className="text-sm text-slate-500">Address</p>
-                  <p className="font-medium">Kolkata, West Bengal</p>
+                  <p className="font-medium">{userData?.employee?.address || '-'}</p>
                 </div>
               </div>
             </div>
@@ -598,17 +609,17 @@ const EmployeeDashboard = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Staff No</p>
-                  <p className="font-medium">EMP001</p>
+                  <p className="font-medium">{userData?.employee?.emp_code || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Department</p>
-                  <p className="font-medium">Engineering</p>
+                  <p className="font-medium">{DEPARTMENTS.find((dpt,index)=> dpt.id == userData?.employee?.department)?.value || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Designation</p>
-                  <p className="font-medium">Software Engineer</p>
+                  <p className="font-medium">{userData?.employee?.position || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
@@ -663,26 +674,26 @@ const EmployeeDashboard = () => {
 
             {/* BUTTONS */}
             <div className="flex flex-wrap gap-4">
-              <button
+              <button style={{cursor:'pointer'}}
                 onClick={() => openPopup("leave")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply Leave
               </button>
 
-              <button
+              <button style={{cursor:'pointer'}}
                 onClick={() => openPopup("wfh")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply WFH
               </button>
-              <button
+              <button style={{cursor:'pointer'}}
                 onClick={() => openPopup("reimbursement")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply For Reimbursement
               </button>
-              <button
+              <button style={{cursor:'pointer'}}
                 onClick={() => openPopup("compOff")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
@@ -703,6 +714,7 @@ const EmployeeDashboard = () => {
                     <th className="text-left p-4">To</th>
                     <th className="text-left p-4">Reason</th>
                     <th className="text-left p-4">Status</th>
+                    <th className="text-left p-4">Rejection Reason</th>
                   </tr>
                 </thead>
 
@@ -755,6 +767,7 @@ const EmployeeDashboard = () => {
                                 ? "Rejected"
                                 : leave.status}
                         </td>
+                        <td className="p-4">{leave.reject_reason}</td>
                       </tr>
                     ))
                   }
@@ -777,6 +790,7 @@ const EmployeeDashboard = () => {
                     <th className="text-left p-4">Reason</th>
                     <th className="text-left p-4">Type</th>
                     <th className="text-left p-4">Status</th>
+                    <th className="text-left p-4">Rejection Reason</th>
                   </tr>
                 </thead>
 
@@ -823,6 +837,7 @@ const EmployeeDashboard = () => {
                                 ? "Rejected"
                                 : leave.status}
                         </td>
+                        <td className="p-4">{leave.reject_reason}</td>
                       </tr>
                     ))
                   }
@@ -847,6 +862,7 @@ const EmployeeDashboard = () => {
                     <th className="text-left p-4">Original To</th>
                     <th className="text-left p-4">Reason</th>
                     <th className="text-left p-4">Status</th>
+                    <th className="text-left p-4">Rejection Reason</th>
                   </tr>
                 </thead>
 
@@ -893,6 +909,7 @@ const EmployeeDashboard = () => {
                                 ? "Rejected"
                                 : item.status}
                         </td>
+                        <td className="p-4">{item.reject_reason}</td>
                       </tr>
                     ))
                   ) : (
@@ -924,7 +941,7 @@ const EmployeeDashboard = () => {
                     <th className="text-left p-4">Request Date</th>
                     {/* <th className="text-left p-4">Attachment</th> */}
                     <th className="text-left p-4">Status</th>
-                    {/* <th className="text-left p-4">Reject Reason</th> */}
+                    <th className="text-left p-4">Rejection Reason</th>
                   </tr>
                 </thead>
 
@@ -983,9 +1000,9 @@ const EmployeeDashboard = () => {
                                 : item.status}
                         </td>
 
-                        {/* <td className="p-4">
+                        <td className="p-4">
                           {item.reject_reason || "-"}
-                        </td> */}
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -1066,8 +1083,8 @@ const EmployeeDashboard = () => {
 
       {/* ================= POPUP ================= */}
       {showPopup && (popupType === "wfh" || popupType === "leave") && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center overflow-y-auto z-50 p-4">
+          <div class="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl my-8 max-h-[80vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">
               Apply Form
             </h2>
@@ -1193,8 +1210,8 @@ const EmployeeDashboard = () => {
 
       {showPopup && (popupType === "reimbursement") && (
 
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center overflow-y-auto z-50 p-4">
+          <div class="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl my-8 max-h-[80vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">
               Apply for Reimbursement
             </h2>
@@ -1291,8 +1308,8 @@ const EmployeeDashboard = () => {
       )}
 
       {showPopup && popupType === "compOff" && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center overflow-y-auto z-50 p-4">
+          <div class="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl my-8 max-h-[80vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">
               Apply for Comp Off / Office Duty
             </h2>

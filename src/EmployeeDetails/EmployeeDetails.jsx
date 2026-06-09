@@ -4,7 +4,7 @@ import HistoryTable from "./HistoryTable";
 import { useParams } from "react-router-dom";
 import { MAIN_API_URL } from "../constants/global-variables";
 import { toast, ToastContainer } from "react-toastify";
-import { LEAVEAPPLYSTATUS } from "../contstants/application";
+import { DEPARTMENTS, LEAVEAPPLYSTATUS } from "../contstants/application";
 
 const EmployeeDetails = () => {
     const userData = JSON.parse(localStorage.getItem("userData"));
@@ -509,15 +509,16 @@ const EmployeeDetails = () => {
 
               <div>
                 <h2 className="text-3xl font-bold">
-                  John Doe
+                  {employee?.fullname}
                 </h2>
 
                 <p className="text-slate-500 mt-1">
-                  Software Engineer
+                  {employee?.position}
                 </p>
 
                 <p className="text-slate-400 text-sm mt-1">
-                  EMP001 | Engineering
+                  {employee?.emp_code} 
+                  {/* | Engineering */}
                 </p>
               </div>
             </div>
@@ -527,14 +528,14 @@ const EmployeeDetails = () => {
               <div className="bg-slate-100 p-5 rounded-xl">
                 <h4 className="text-sm text-slate-500">Email</h4>
                 <p className="font-semibold mt-1">
-                  john.doe@company.com
+                  {employee?.email}
                 </p>
               </div>
 
               <div className="bg-slate-100 p-5 rounded-xl">
                 <h4 className="text-sm text-slate-500">Phone</h4>
                 <p className="font-semibold mt-1">
-                  9876543210
+                   {employee?.employee?.mobile}
                 </p>
               </div>
             </div>
@@ -548,27 +549,27 @@ const EmployeeDetails = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Gender</p>
-                  <p className="font-medium">Male</p>
+                  <p className="font-medium">{employee?.employee?.gender || '-' }</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Date of Birth</p>
-                  <p className="font-medium">12 Aug 1995</p>
+                  <p className="font-medium">{employee?.employee?.dob || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Blood Group</p>
-                  <p className="font-medium">B+</p>
+                  <p className="font-medium">{employee?.employee?.blood_group || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Marital Status</p>
-                  <p className="font-medium">Single</p>
+                  <p className="font-medium">{employee?.employee?.marital_status || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
                   <p className="text-sm text-slate-500">Address</p>
-                  <p className="font-medium">Kolkata, West Bengal</p>
+                  <p className="font-medium">{employee?.employee?.address || '-'}</p>
                 </div>
               </div>
             </div>
@@ -582,27 +583,27 @@ const EmployeeDetails = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Staff No</p>
-                  <p className="font-medium">EMP001</p>
+                  <p className="font-medium">{employee?.employee?.emp_code || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Department</p>
-                  <p className="font-medium">Engineering</p>
+                  <p className="font-medium">{DEPARTMENTS.find((dpt , index)=> dpt.id == employee?.employee?.department)?.value || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Designation</p>
-                  <p className="font-medium">Software Engineer</p>
+                  <p className="font-medium">{employee?.employee?.position || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Date of Joining</p>
-                  <p className="font-medium">{employee?.joining_date || "N/A"}</p>
+                  <p className="font-medium">{employee?.employee?.dob || "-"}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl md:col-span-2">
                   <p className="text-sm text-slate-500">Reporting Manager</p>
-                  <p className="font-medium">{employee?.reporting_manager || "-"}</p>
+                  <p className="font-medium">{ employee?.reporting_manager || employee?.employee?.reporting_manager ||  "-"}</p>
                 </div>
               </div>
             </div>
