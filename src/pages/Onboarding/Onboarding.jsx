@@ -244,12 +244,13 @@ const EmployeeOnboarding = () => {
             "manager_id": selectedValue, // This is the manager_id
             "org_id": userData.user.org_id,
             "name": employeeForm?.fullname,
-            "user_type": employeeForm?.usertype.toString() || "20002", // Default to "Employee" if not selected
+            "user_type": employeeForm?.usertype?.toString() || "20002", // Default to "Employee" if not selected
             "email": employeeForm?.username,
             "password": employeeForm?.password,
             // "emp_code": employeeForm?.emp_code,
             "position": employeeForm?.position,
             "department": employeeForm?.department,
+            "emp_code": employeeForm?.emp_code
 
         }
         console.log("Adding employee with payload:", payload);
@@ -554,7 +555,19 @@ const EmployeeOnboarding = () => {
                             }
                         >
 
-
+                            <input
+                                type="text"
+                                name="emp_code"
+                                placeholder="Employee ID"
+                                value={
+                                    employeeForm.emp_code
+                                }
+                                onChange={
+                                    handleInputChange
+                                }
+                                className="w-full mb-3 px-4 py-2 border rounded"
+                                required
+                            />
 
                             <select
                                 id="dynamicSelect"
@@ -645,7 +658,7 @@ const EmployeeOnboarding = () => {
                             <input
                                 type="text"
                                 name="username"
-                                placeholder="Username"
+                                placeholder="Email"
                                 value={
                                     employeeForm.username
                                 }

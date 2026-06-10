@@ -44,6 +44,62 @@ const ViewEmployee = () => {
     fy_sick_leaves: 0,
     fy_earned_leaves: 0,
   });
+  const [managerOptions, setManagerOptions] = useState([])
+  const fetchEmployeesFromAPI = () => {
+
+    let org_id = userData?.user?.org_id;
+    axios
+      .get(
+        `${MAIN_API_URL}/fetch-employees-org-id/${org_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      .then((response) => {
+        console.log(
+          "Employees fetched:",
+          response.data.data
+        );
+        // const data =
+        //     response?.data;
+
+        if (response.data.data) {
+          let options = [];
+
+          response.data.data.forEach((emp) => {
+            options.push({
+              id: emp.id,
+              value: emp.fullname
+            });
+          });
+          setManagerOptions(options);
+
+
+
+        }
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to fetch employees:",
+          err
+        );
+      });
+  };
+
+  useEffect(() => {
+    fetchEmployeesFromAPI();
+  }, []);
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     const fetchEmployee = () => {
@@ -124,7 +180,7 @@ const ViewEmployee = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+    console.log(name, value, 'name=value')
     setEmployeeData((prev) => ({
       ...prev,
       [name]: value,
@@ -145,7 +201,7 @@ const ViewEmployee = () => {
       grade: employeeData.grade,
       work_level: employeeData.work_level,
       confirmation_date: employeeData.confirmation_date || null,
-      reporting_manager: Number(employeeData.reporting_manager) || null,
+      reporting_manager: employeeData.reporting_manager,
       manager_emp_code: employeeData.manager_emp_code,
       email: employeeData.email,
       mobile: employeeData.mobile,
@@ -265,7 +321,7 @@ const ViewEmployee = () => {
             {/* Designation */}
             <div>
               <label className="block text-sm font-medium mb-1">Designation</label>
-              <select
+              {/* <select
                 name="position"
                 value={employeeData.position}
                 onChange={handleChange}
@@ -285,7 +341,20 @@ const ViewEmployee = () => {
                     {role.value}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <input
+                type="text"
+                name="position"
+                placeholder="Designation"
+                value={
+                  employeeData.position
+                }
+                onChange={
+                  handleChange
+                }
+                className="border rounded px-4 py-2 bg-gray-50 block w-full disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800"
+                required
+              />
             </div>
 
             {/* Grade */}
@@ -330,14 +399,32 @@ const ViewEmployee = () => {
             {/* Manager Name */}
             <div>
               <label className="block text-sm font-medium mb-1">Manager Name</label>
-              <input
+              {/* <input
                 type="text"
                 name="reporting_manager"
                 value={employeeData.reporting_manager}
                 onChange={handleChange}
                 disabled={!canEditPersonal}
                 className="border rounded px-4 py-2 bg-gray-50 block w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+              /> */}
+
+              <select
+                id="dynamicSelect"
+                name="reporting_manager"
+                value={employeeData.reporting_manager}
+                onChange={handleChange}
+                className="w-full mb-3 px-4 py-2 border rounded"
+              >
+                {/* Default placeholder option */}
+                <option value="">Choose a manager</option>
+
+                {/* 4. Map over the array to generate dynamic <option> elements */}
+                {managerOptions?.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.value}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Manager Staff No. */}

@@ -9,7 +9,7 @@ const RecruitmentHeader = () => {
         Recruitment Hub
       </h1>
 
-      <button
+      <button style={{ cursor : 'pointer'}}
         onClick={() =>
           window.history.back()
         }

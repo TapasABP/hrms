@@ -279,7 +279,7 @@ const EmployeeDashboard = () => {
           "Error applying leave:",
           error.response?.data || error.message
         );
-        alert("Failed to apply leave");
+        toast.error(error.response?.data?.error || "Something went wrong!");
       });
 
 
@@ -388,7 +388,7 @@ const EmployeeDashboard = () => {
               userData?.user?.username}
           </span>
 
-          <button
+          <button style={{ cursor : 'pointer'}}
             onClick={logout}
             className="text-red-300 hover:text-red-400 text-sm"
           >
@@ -400,7 +400,7 @@ const EmployeeDashboard = () => {
       {/* ================= NAVBAR ================= */}
       <nav className="bg-white border-b border-slate-200 px-8 flex gap-6">
         {["home", "profile", "leaves", "team"].map((tab) => (
-          <button
+          <button style={{cursor:'pointer'}}
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`py-4 capitalize border-b-2 transition-all ${activeTab === tab
@@ -1025,11 +1025,11 @@ const EmployeeDashboard = () => {
         {activeTab === "team" && (
   <div>
     <h2 className="text-2xl font-bold mb-6">
-      My Team
+      { teammembers.length > 1 ? "My Team" : ""} 
     </h2>
 
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {teammembers?.map((member) => (
+      { teammembers.length > 1 ?  teammembers?.map((member) => (
         <div
           key={member.id}
           className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"
@@ -1075,7 +1075,7 @@ const EmployeeDashboard = () => {
             </div> */}
           </div>
         </div>
-      ))}
+      )) :      <h2 className="text-2xl font-bold mb-6">No team members to display.</h2>}
     </div>
   </div>
 )}

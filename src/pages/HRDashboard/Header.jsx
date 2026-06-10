@@ -26,7 +26,7 @@ const Header = () => {
             Welcome, User
           </span>
 
-          <span
+          <span style={{ cursor : 'pointer'}}
             onClick={logout}
             className="text-red-300 hover:text-red-100 underline cursor-pointer"
           >
