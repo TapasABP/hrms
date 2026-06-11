@@ -3,7 +3,9 @@ export const DEPARTMENTS = [
   { id: 1000002, value: "IT" },
   { id: 1000003, value: "Marketing" },
   { id: 1000004, value: "Sales" },
-  { id: 1000005, value: "Renewal" }
+  { id: 1000005, value: "Renewal" ,
+    id: 0, value: "Product"
+  }
 ];
 
 export const USERTYPES = [

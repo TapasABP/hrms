@@ -23,7 +23,7 @@ const Login = () => {
     const handleLogin = (e) => {
         e.preventDefault();
 
-        axios.post(`${MAIN_API_URL}/login`, { email: loginCredentials.username, password: loginCredentials.password })
+        axios.post(`${MAIN_API_URL}/login`, { username: loginCredentials.username, password: loginCredentials.password })
             .then((response) => {
                 console.log("Login successful:", response.data);
                 if (response.data.status) {
@@ -42,7 +42,7 @@ const Login = () => {
     const handleResetPassword = () => {
         console.log("Password reset submitted");
         const payload = {
-            "email": resetCredentials.username,
+            "username": resetCredentials.username,
             "current_password": resetCredentials.current_password,
             "new_password": resetCredentials.new_password
         }

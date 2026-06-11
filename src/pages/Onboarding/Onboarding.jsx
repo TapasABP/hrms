@@ -508,7 +508,7 @@ const EmployeeOnboarding = () => {
                                         <td className="border px-4 py-2">
                                             {DEPARTMENTS.find(
                                                 (dept) => dept.id == emp.department
-                                            )?.value || "N/A"}
+                                            )?.value || emp.department || "N/A"}
                                         </td>
 
                                         <td className="border px-4 py-2">

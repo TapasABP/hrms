@@ -1025,16 +1025,16 @@ const EmployeeDashboard = () => {
         {activeTab === "team" && (
   <div>
     <h2 className="text-2xl font-bold mb-6">
-      { teammembers.length > 1 ? "My Team" : ""} 
+      { teammembers.length   ? "My Team" : ""} 
     </h2>
 
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      { teammembers.length > 1 ?  teammembers?.map((member) => (
+      { teammembers.length  ?  teammembers?.map((member) => (
         <div
           key={member.id}
           className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"
           onClick={() => {
-            navigate(`/employee-details/${member.id}`);
+            navigate(`/employee-details/${member.user_id}`);
           }}
         >
           <div className="flex flex-col items-center text-center">
@@ -1129,6 +1129,7 @@ const EmployeeDashboard = () => {
                       value={formData.duration}
                       onChange={handleChange}
                       className="w-full border border-slate-300 rounded-xl p-3"
+                      required
                     >
                       <option value="">Select</option>
 
@@ -1156,6 +1157,7 @@ const EmployeeDashboard = () => {
                   value={formData.fromDate}
                   onChange={handleChange}
                   className="w-full border border-slate-300 rounded-xl p-3"
+                  required
                 />
               </div>
 
@@ -1170,6 +1172,7 @@ const EmployeeDashboard = () => {
                   value={formData.toDate}
                   onChange={handleChange}
                   className="w-full border border-slate-300 rounded-xl p-3"
+                  required
                 />
               </div>
 
@@ -1184,6 +1187,7 @@ const EmployeeDashboard = () => {
                   onChange={handleChange}
                   className="w-full border border-slate-300 rounded-xl p-3"
                   rows="4"
+                  required
                 />
               </div>
 

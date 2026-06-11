@@ -97,7 +97,9 @@ const ViewEmployee = () => {
 
 
 
+const handleDeleteEmployee = ()=>{
 
+}
 
 
 
@@ -530,6 +532,13 @@ const ViewEmployee = () => {
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               >
                 Save Personal Info
+              </button>
+
+              <button style={{ cursor :"pointer"}}
+                onClick={handleDeleteEmployee}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              >
+                Leave
               </button>
             </div>
           )}
