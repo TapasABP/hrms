@@ -47,7 +47,7 @@ const EmployeeOnboarding = () => {
             key: null,
             asc: true,
         });
-  const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [employeeForm, setEmployeeForm] =
         useState({
             fullname: "",
@@ -123,45 +123,49 @@ const EmployeeOnboarding = () => {
         if (departmentFilter) {
             employees = employees.filter(
                 (emp) =>
-                    emp.department ===
+                    emp.department ==
                     departmentFilter
             );
+
+            setFilteredEmployees(employees);
+        } else {
+            setFilteredEmployees(allEmployees);
         }
 
         // Sorting
-        if (currentSort.key) {
-            employees.sort((a, b) => {
-                const valA = (
-                    a[currentSort.key] || ""
-                )
-                    .toString()
-                    .toLowerCase();
+        // if (currentSort.key) {
+        //     employees.sort((a, b) => {
+        //         const valA = (
+        //             a[currentSort.key] || ""
+        //         )
+        //             .toString()
+        //             .toLowerCase();
 
-                const valB = (
-                    b[currentSort.key] || ""
-                )
-                    .toString()
-                    .toLowerCase();
+        //         const valB = (
+        //             b[currentSort.key] || ""
+        //         )
+        //             .toString()
+        //             .toLowerCase();
 
-                if (valA < valB)
-                    return currentSort.asc
-                        ? -1
-                        : 1;
+        //         if (valA < valB)
+        //             return currentSort.asc
+        //                 ? -1
+        //                 : 1;
 
-                if (valA > valB)
-                    return currentSort.asc
-                        ? 1
-                        : -1;
+        //         if (valA > valB)
+        //             return currentSort.asc
+        //                 ? 1
+        //                 : -1;
 
-                return 0;
-            });
-        }
+        //         return 0;
+        //     });
+        // }
 
-        setFilteredEmployees(employees);
+
     }, [
         allEmployees,
         departmentFilter,
-        currentSort,
+        // currentSort,
     ]);
 
     // ==========================
@@ -305,7 +309,7 @@ const EmployeeOnboarding = () => {
         const formData = new FormData();
         formData.append("file", bulkFile);
 
-       setLoading(true)
+        setLoading(true)
         axios
             .post(
                 `${MAIN_API_URL}/upload-employee-bulk`,
@@ -366,7 +370,7 @@ const EmployeeOnboarding = () => {
                 </h1>
 
                 <div className="flex items-center space-x-4">
-                    <button style={{cursor:'pointer'}}
+                    {/* <button style={{cursor:'pointer'}}
                         onClick={openAddModal}
                         className="flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
                     >
@@ -374,9 +378,9 @@ const EmployeeOnboarding = () => {
                         <span className="text-sm font-medium">
                             Add Employee
                         </span>
-                    </button>
+                    </button> */}
 
-                    <button style={{cursor:'pointer'}}
+                    <button style={{ cursor: 'pointer' }}
                         onClick={
                             openBulkUploadModal
                         }
@@ -388,7 +392,7 @@ const EmployeeOnboarding = () => {
                         </span>
                     </button>
 
-                    <button style={{cursor:'pointer'}}
+                    <button style={{ cursor: 'pointer' }}
                         onClick={() =>
                             navigate(
                                 "/hr-dashboard"
@@ -423,11 +427,16 @@ const EmployeeOnboarding = () => {
                         <option value="">
                             All Departments
                         </option>
-                        <option>IT</option>
+                        {/* <option>IT</option>
                         <option>Renewal</option>
                         <option>Marketing</option>
                         <option>HR</option>
-                        <option>Sales</option>
+                        <option>Sales</option> */}
+                        {
+                            DEPARTMENTS.map((dpt, index) => {
+                                return <option value={dpt.id}>{dpt.value}</option>
+                            })
+                        }
                     </select>
                 </div>
 
@@ -519,7 +528,7 @@ const EmployeeOnboarding = () => {
                                         </td>
 
                                         <td className="border px-4 py-2">
-                                            <button style={{cursor:'pointer'}}
+                                            <button style={{ cursor: 'pointer' }}
                                                 onClick={() =>
                                                     editEmployee(
                                                         emp
@@ -699,7 +708,7 @@ const EmployeeOnboarding = () => {
                                 </select>}
 
                             <div className="flex justify-end gap-2">
-                                <button style={{cursor:'pointer'}}
+                                <button style={{ cursor: 'pointer' }}
                                     type="button"
                                     onClick={
                                         closeAddModal
@@ -709,7 +718,7 @@ const EmployeeOnboarding = () => {
                                     Cancel
                                 </button>
 
-                                <button style={{cursor:'pointer'}}
+                                <button style={{ cursor: 'pointer' }}
                                     type="submit"
                                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                 >
@@ -742,7 +751,7 @@ const EmployeeOnboarding = () => {
                                     accept=".xlsx,.xls, .csv"
                                     onChange={(e) => setBulkFile(e.target.files?.[0] || null)}
                                     className="hidden"
-                                    
+
                                 />
 
                                 <label
@@ -754,9 +763,9 @@ const EmployeeOnboarding = () => {
 
                                 {bulkFile ? (
                                     <p className="mt-2 text-sm text-gray-600">
-                                        {bulkFile?.name }
+                                        {bulkFile?.name}
                                     </p>
-                                ):"No file choosen"}
+                                ) : "No file choosen"}
                             </div>
 
                             <div className="flex justify-end gap-2">
@@ -771,10 +780,10 @@ const EmployeeOnboarding = () => {
                                 </button>
 
                                 <button
-                                    type="submit"  disabled={loading}
+                                    type="submit" disabled={loading}
                                     className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
                                 >
-                                    { loading ? "Uploading..." : "Upload" } 
+                                    {loading ? "Uploading..." : "Upload"}
                                 </button>
                             </div>
                         </form>

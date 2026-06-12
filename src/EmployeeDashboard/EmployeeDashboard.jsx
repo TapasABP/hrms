@@ -315,7 +315,11 @@ const EmployeeDashboard = () => {
           requestDate: "",
         });
         closePopup();
-        window.location.reload();
+       setTimeout(()=>{
+         window.location.reload();
+       },2000)
+
+        
       })
       .catch((error) => {
         console.error(error);
@@ -467,9 +471,9 @@ const EmployeeDashboard = () => {
                 <div className="space-y-3">
                   {
                     userData?.birthdays?.length > 0 ? (
-                      userData.birthdays.map((birthday) => (
+                      userData.birthdays?.map((birthday) => (
                         <div key={birthday.id} className="bg-slate-50 rounded-xl p-4">
-                          {birthday.fullname}
+                          {birthday.fullname} - {DEPARTMENTS.find((dpt,index)=> dpt.id == birthday.department )?.value || "N/A"}
                         </div>
                       ))
                     ) : (
@@ -488,9 +492,9 @@ const EmployeeDashboard = () => {
                 <div className="space-y-3">
                  {
                     userData?.leave_today?.length > 0 ? (
-                      userData.leave_today.map((leave) => (
+                      userData.leave_today?.map((leave) => (
                         <div key={leave.id} className="bg-slate-50 rounded-xl p-4">
-                          {leave.fullname}
+                          {leave.fullname} - {DEPARTMENTS.find((dpt,index)=> dpt.id == leave.department )?.value || "N/A"}
                         </div>
                       ))
                     ) : (
@@ -1025,11 +1029,11 @@ const EmployeeDashboard = () => {
         {activeTab === "team" && (
   <div>
     <h2 className="text-2xl font-bold mb-6">
-      { teammembers.length   ? "My Team" : ""} 
+      { teammembers.length && teammembers[0].id  ? "My Team" : ""} 
     </h2>
 
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      { teammembers.length  ?  teammembers?.map((member) => (
+      { teammembers.length && teammembers[0].id ?  teammembers?.map((member) => (
         <div
           key={member.id}
           className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"

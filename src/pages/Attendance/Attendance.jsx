@@ -443,8 +443,8 @@ const Attendance = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {leaveWfhHistory?.length > 0 ? (
-                          leaveWfhHistory?.map((item) => (
+                        {leaveWfhHistory?.filter((leave) => leave.leave_wfh === "7000001").length > 0 ? (
+                          leaveWfhHistory?.filter((leave) => leave.leave_wfh === "7000001").map((item) => (
                             <tr key={item.id} className="border-b">
                               <td className="p-2">{item.from_date}</td>
                               <td className="p-2">{item.to_date}</td>
@@ -486,19 +486,18 @@ const Attendance = () => {
                         <tr className="bg-slate-100">
                           <th className="p-2 text-left">From</th>
                           <th className="p-2 text-left">To</th>
-                          <th className="p-2 text-left">Duration</th>
                           <th className="p-2 text-left">Reason</th>
                           <th className="p-2 text-left">Status</th>
                           <th className="p-2 text-left">Rejection Reason</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {leaveWfhHistory?.length > 0 ? (
-                          leaveWfhHistory?.map((item) => (
+                        {leaveWfhHistory?.filter((leave) => leave.leave_wfh === "7000002").length > 0 ? (
+                          leaveWfhHistory?.filter((leave) => leave.leave_wfh === "7000002").map((item) => (
                             <tr key={item.id} className="border-b">
                               <td className="p-2">{item.from_date}</td>
                               <td className="p-2">{item.to_date}</td>
-                              <td className="p-2">{LEAVEDURATION.find(duration => duration.id == item.duration)?.value || "Unknown"}</td>
+                              {/* <td className="p-2">{LEAVEDURATION.find(duration => duration.id == item.duration)?.value || "Unknown"}</td> */}
                               <td className="p-2">{item.reason}</td>
                               <td className="p-2">
                                 <span

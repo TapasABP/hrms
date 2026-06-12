@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MAIN_API_URL } from "../../constants/global-variables";
 import axios from "axios";
 import { DEPARTMENTS } from "../../contstants/application";
+import { toast, ToastContainer } from "react-toastify";
 
 const ViewEmployee = () => {
   const [searchParams] = useSearchParams();
@@ -45,6 +46,8 @@ const ViewEmployee = () => {
     fy_earned_leaves: 0,
   });
   const [managerOptions, setManagerOptions] = useState([])
+  const [exitDate, setExitDate] = useState("")
+  console.log(exitDate, 'exitdate')
   const fetchEmployeesFromAPI = () => {
 
     let org_id = userData?.user?.org_id;
@@ -97,9 +100,43 @@ const ViewEmployee = () => {
 
 
 
-const handleDeleteEmployee = ()=>{
+  const handleDeleteEmployee = () => {
+    axios
+      .post(
+        `${MAIN_API_URL}/employee/delete`,
+        {
+          "employee_id": employeeData?.id,
+          "exit_date": employeeData?.exit_date
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      .then((response) => {
+        console.log(
+          "Employee deleted:",
+          response.data
+        );
+        if (response.data.status) {
+          toast.success(response.data.message || "Employee exited succesfully!")
+          setTimeout(()=>{
+            navigate('/onboarding')
+          },1600)
+        } else {
+          toast.warning(response.data.message)
+        }
 
-}
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to fetch employees:",
+          err
+        );
+        toast.error(err.response.data.message || "Something went wrong!")
+      });
+  }
 
 
 
@@ -154,6 +191,9 @@ const handleDeleteEmployee = ()=>{
               fy_sick_leaves: leaveHistory.fy_sick_leaves || 0,
               fy_earned_leaves: leaveHistory.fy_earned_leaves || 0,
             });
+            setExitDate(data.exit_date
+              ? String(data.exit_date).split("T")[0]
+              : "")
           }
         })
         .catch((err) => {
@@ -527,14 +567,15 @@ const handleDeleteEmployee = ()=>{
 
           {canEditPersonal && (
             <div className="mt-4 flex gap-3">
-              <button
+              <button style={{ cursor: "pointer" }}
                 onClick={handleSave}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               >
                 Save Personal Info
               </button>
 
-              <button style={{ cursor :"pointer"}}
+              <button style={{ cursor: exitDate ? "pointer" : "not-allowed" }}
+                disabled={exitDate ? false : true}
                 onClick={handleDeleteEmployee}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               >
@@ -576,6 +617,7 @@ const handleDeleteEmployee = ()=>{
           </div>
         </div>
       </main>
+      <ToastContainer/>
     </div>
   );
 };
