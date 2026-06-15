@@ -436,8 +436,8 @@ const EmployeeDashboard = () => {
                 </h2>
 
                 <p className="text-slate-500">
-                  {userloginData?.user?.designation ||
-                    "Software Engineer"}
+                  {userData?.position ||
+                    "-"}
                 </p>
 
                 <p className="text-slate-500">
