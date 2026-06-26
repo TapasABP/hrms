@@ -166,7 +166,7 @@ const Attendance = () => {
   }, [orgId]);
   const loadEmployeeDetails = (userId, fullname) => {
     setDetailsLoading(true);
-
+  
     axios
       .post(
         `${MAIN_API_URL}/attendance/employee-history`,
@@ -356,7 +356,7 @@ const Attendance = () => {
                 ) : attendanceData.length > 0 ? (
                   attendanceData.map((emp) => (
                     <tr key={emp.user_id} className="border-b hover:bg-slate-50" >
-                      <td className="p-3">{emp.user_id}</td>
+                      <td className="p-3">{emp.emp_code}</td>
                       <td className="p-2 font-medium">{emp.fullname}</td>
                       <td className="p-3">{DEPARTMENTS.find(dept => dept.id == emp.department)?.value || "Unknown"}</td>
                       <td className="p-3">{emp.leave_count}</td>

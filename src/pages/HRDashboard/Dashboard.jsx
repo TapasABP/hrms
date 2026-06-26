@@ -16,12 +16,12 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const modules = [
-  {
-    title: "Recruitment",
-    icon: Briefcase,
-    page: "/recruitment",
-    iconColor: "text-blue-500",
-  },
+  // {
+  //   title: "Recruitment",
+  //   icon: Briefcase,
+  //   page: "/recruitment",
+  //   iconColor: "text-blue-500",
+  // },
   {
     title: "Onboarding",
     icon: UserPlus,
@@ -52,7 +52,7 @@ const modules = [
     title: "Log in as Employee",
     icon: Users,
     page: "/employee-dashboard",
-    iconColor: "text-pink-500",
+    iconColor: "text-blue-500",
   },
 ];
 

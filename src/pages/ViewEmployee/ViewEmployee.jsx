@@ -8,7 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 const ViewEmployee = () => {
   const [searchParams] = useSearchParams();
-  const userEmail = searchParams.get("email");
+  const empCode = searchParams.get("empcode");
 
   const userData = JSON.parse(localStorage.getItem("userData"));
   const token = userData?.token;
@@ -47,7 +47,7 @@ const ViewEmployee = () => {
   });
   const [managerOptions, setManagerOptions] = useState([])
   const [exitDate, setExitDate] = useState("")
-  console.log(exitDate, 'exitdate')
+  console.log(employeeData, 'employeeData')
   const fetchEmployeesFromAPI = () => {
 
     let org_id = userData?.user?.org_id;
@@ -121,9 +121,9 @@ const ViewEmployee = () => {
         );
         if (response.data.status) {
           toast.success(response.data.message || "Employee exited succesfully!")
-          setTimeout(()=>{
+          setTimeout(() => {
             navigate('/onboarding')
-          },1600)
+          }, 1600)
         } else {
           toast.warning(response.data.message)
         }
@@ -142,10 +142,11 @@ const ViewEmployee = () => {
 
   useEffect(() => {
     const fetchEmployee = () => {
+      //actual fetch details api
       axios
         .post(
           `${MAIN_API_URL}/employee/details`,
-          { email: userEmail },
+          { empcode: empCode },
           {
             headers: {
               "Content-Type": "application/json",
@@ -155,45 +156,173 @@ const ViewEmployee = () => {
         )
         .then((response) => {
           console.log("Employee details response:", response);
+
           if (response.data) {
             const data = response.data.employee;
             const leaveHistory = response.data.leave_master;
-            console.log(data, "Department value from API");
-            setEmployeeData({
-              id: data.id,
-              fullname: data.fullname || "",
-              department: data.department || "",
-              emp_code: data.emp_code || "",
-              joining_date: data.joining_date
-                ? String(data.joining_date).split("T")[0]
-                : "",
-              position: data.position || "",
-              grade: data.grade || "",
-              work_level: data.work_level || "",
-              confirmation_date: data.confirmation_date
-                ? String(data.confirmation_date).split("T")[0]
-                : "",
-              reporting_manager: data.reporting_manager || "",
-              manager_emp_code: data.manager_emp_code || "",
-              email: data.email || "",
-              mobile: data.mobile || "",
-              gender: data.gender || "",
-              dob: data.dob ? String(data.dob).split("T")[0] : "",
-              address: data.address || "",
-              exit_date: data.exit_date
-                ? String(data.exit_date).split("T")[0]
-                : "",
 
-              pending_casual_leaves: leaveHistory.pending_casual_leaves || 0,
-              pending_sick_leaves: leaveHistory.pending_sick_leaves || 0,
-              pending_earned_leaves: leaveHistory.pending_earned_leaves || 0,
-              fy_casual_leaves: leaveHistory.fy_casual_leaves || 0,
-              fy_sick_leaves: leaveHistory.fy_sick_leaves || 0,
-              fy_earned_leaves: leaveHistory.fy_earned_leaves || 0,
-            });
-            setExitDate(data.exit_date
-              ? String(data.exit_date).split("T")[0]
-              : "")
+            //Checking whether the reporting_manager is "0", if so then get the details by manager_emp_code from /emp-details-code api,
+            // otherwise just set the data
+             if(data.reporting_manager == "0"){
+               axios
+              .post(
+                `${MAIN_API_URL}/employee/emp-details-code`,
+                {
+                  "empcode": data.manager_emp_code
+                },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              ).then((res) => {
+
+
+                console.log(res.data.empdetails, 'manager details')
+                //After getting the details of the manager take its id and call the update info api to make reporting_manager = this id, and after that set the values
+                if (res.data.empdetails) {
+                  // update this new details 
+                  const payload = {
+                    actor_email: userData?.user.email, 
+                    actor_user_type: Number(userData?.user?.user_type),
+                    employee_id: Number(data.id),
+                    fullname: data.fullname,
+                    department: Number(data.department), 
+                    joining_date: data.joining_date || null,
+                    position: data.position,
+                    grade: data.grade,
+                    work_level: data.work_level,
+                    confirmation_date: data.confirmation_date || null,
+                    reporting_manager: res.data.empdetails.id, //passing that id
+                    manager_emp_code: data.manager_emp_code,
+                    email: data.email,
+                    mobile: data.mobile,
+                    gender: data.gender,
+                    dob: data.dob || null,
+                    address: data.address,
+                    exit_date: data.exit_date || null
+                  };
+
+                  // 2. Axios PUT submission
+                  axios.post(`${MAIN_API_URL}/employees/update-personal-info`, payload, {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`
+                    }
+                  })
+                    .then((response) => {
+                      // alert("Employee details updated successfully!");
+                      
+                      console.log("Update Success Response:", response.data);
+                      if(response.data){
+                        //  const id = res.data.empdetails.id
+                  
+                  console.log(data, "Department value from API");
+                  setEmployeeData({
+                    id: data.id,
+                    fullname: data.fullname || "",
+                    department: data.department || "",
+                    emp_code: data.emp_code || "",
+                    joining_date: data.joining_date
+                      ? String(data.joining_date).split("T")[0]
+                      : "",
+                    position: data.position || "",
+                    grade: data.grade || "",
+                    work_level: data.work_level || "",
+                    confirmation_date: data.confirmation_date
+                      ? String(data.confirmation_date).split("T")[0]
+                      : "",
+                    
+                    reporting_manager : res.data.empdetails.id,
+                    manager_emp_code: data.manager_emp_code || "",
+                    email: data.email || "",
+                    mobile: data.mobile || "",
+                    gender: data.gender || "",
+                    dob: data.dob ? String(data.dob).split("T")[0] : "",
+                    address: data.address || "",
+                    exit_date: data.exit_date
+                      ? String(data.exit_date).split("T")[0]
+                      : "",
+
+                    pending_casual_leaves: leaveHistory.pending_casual_leaves || 0,
+                    pending_sick_leaves: leaveHistory.pending_sick_leaves || 0,
+                    pending_earned_leaves: leaveHistory.pending_earned_leaves || 0,
+                    fy_casual_leaves: leaveHistory.fy_casual_leaves || 0,
+                    fy_sick_leaves: leaveHistory.fy_sick_leaves || 0,
+                    fy_earned_leaves: leaveHistory.fy_earned_leaves || 0,
+                  });
+
+
+                  setExitDate(data.exit_date
+                    ? String(data.exit_date).split("T")[0]
+                    : "")
+                      }
+                    })
+                    .catch((err) => {
+                      console.error("Error saving employee details:", err.response.data);
+                      alert(err.response?.data?.error || "Failed to update employee information.");
+                    });
+
+
+
+
+                 
+                }
+              }).catch((err) => {
+                console.log(err, 'error')
+              })
+
+             }else{
+               setEmployeeData({
+                    id: data.id,
+                    fullname: data.fullname || "",
+                    department: data.department || "",
+                    emp_code: data.emp_code || "",
+                    joining_date: data.joining_date
+                      ? String(data.joining_date).split("T")[0]
+                      : "",
+                    position: data.position || "",
+                    grade: data.grade || "",
+                    work_level: data.work_level || "",
+                    confirmation_date: data.confirmation_date
+                      ? String(data.confirmation_date).split("T")[0]
+                      : "",
+                    // reporting_manager: data.reporting_manager == "0" ? id : data.reporting_manager,
+                    reporting_manager : data.reporting_manager,
+                    manager_emp_code: data.manager_emp_code || "",
+                    email: data.email || "",
+                    mobile: data.mobile || "",
+                    gender: data.gender || "",
+                    dob: data.dob ? String(data.dob).split("T")[0] : "",
+                    address: data.address || "",
+                    exit_date: data.exit_date
+                      ? String(data.exit_date).split("T")[0]
+                      : "",
+
+                    pending_casual_leaves: leaveHistory.pending_casual_leaves || 0,
+                    pending_sick_leaves: leaveHistory.pending_sick_leaves || 0,
+                    pending_earned_leaves: leaveHistory.pending_earned_leaves || 0,
+                    fy_casual_leaves: leaveHistory.fy_casual_leaves || 0,
+                    fy_sick_leaves: leaveHistory.fy_sick_leaves || 0,
+                    fy_earned_leaves: leaveHistory.fy_earned_leaves || 0,
+                  });
+
+
+                  setExitDate(data.exit_date
+                    ? String(data.exit_date).split("T")[0]
+                    : "")
+             }
+
+
+
+
+
+
+
+
+
+
           }
         })
         .catch((err) => {
@@ -213,12 +342,12 @@ const ViewEmployee = () => {
         });
     };
 
-    if (userEmail) {
+    if (empCode) {
       fetchEmployee();
     } else {
       setLoading(false);
     }
-  }, [userEmail, token]);
+  }, [empCode, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -617,7 +746,7 @@ const ViewEmployee = () => {
           </div>
         </div>
       </main>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };

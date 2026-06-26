@@ -26,8 +26,8 @@ const EmployeeDashboard = () => {
     // toDate: "",
     // reason: "",
   });
-
-
+  const [billFile, setBillFile] = useState(null)
+  console.log(formData, 'formData')
   // useEffect(() => {
   //   axios.post(`${MAIN_API_URL}/leave/leave-wfh`, { user_id: userloginData?.user?.id }, {
   //     headers: {
@@ -143,7 +143,7 @@ const EmployeeDashboard = () => {
             });
 
             setleaveData(leaveData.history || []);
-        console.log(compOffResponse.data.data,'compOffResponse')
+            console.log(compOffResponse.data.data, 'compOffResponse')
             // Comp Off Data
             setCompOffData(
               compOffResponse.data.data || []
@@ -288,20 +288,39 @@ const EmployeeDashboard = () => {
   const handleSubmitReimbursement = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      email: userloginData?.user?.email,
-      request_for: formData.requestFor,
-      amount_inr: formData.amountInr,
-      request_date: formData.requestDate,
+    const payload = new FormData();
 
-    };
+    payload.append(
+      "email",
+      userloginData?.user?.email || ""
+    );
 
+    payload.append(
+      "request_for",
+      formData.requestFor
+    );
+
+    payload.append(
+      "amount_inr",
+      formData.amountInr
+    );
+
+    payload.append(
+      "request_date",
+      formData.requestDate
+    );
+
+    payload.append(
+      "attachmment",
+      billFile
+    );
+    
     axios
       .post(
         `${MAIN_API_URL}/reimbursements/apply-reimbursement`,
         payload, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`
         }
       }
@@ -315,11 +334,11 @@ const EmployeeDashboard = () => {
           requestDate: "",
         });
         closePopup();
-       setTimeout(()=>{
-         window.location.reload();
-       },2000)
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000)
 
-        
+
       })
       .catch((error) => {
         console.error(error);
@@ -392,7 +411,7 @@ const EmployeeDashboard = () => {
               userData?.user?.username}
           </span>
 
-          <button style={{ cursor : 'pointer'}}
+          <button style={{ cursor: 'pointer' }}
             onClick={logout}
             className="text-red-300 hover:text-red-400 text-sm"
           >
@@ -404,7 +423,7 @@ const EmployeeDashboard = () => {
       {/* ================= NAVBAR ================= */}
       <nav className="bg-white border-b border-slate-200 px-8 flex gap-6">
         {["home", "profile", "leaves", "team"].map((tab) => (
-          <button style={{cursor:'pointer'}}
+          <button style={{ cursor: 'pointer' }}
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`py-4 capitalize border-b-2 transition-all ${activeTab === tab
@@ -473,7 +492,7 @@ const EmployeeDashboard = () => {
                     userData?.birthdays?.length > 0 ? (
                       userData.birthdays?.map((birthday) => (
                         <div key={birthday.id} className="bg-slate-50 rounded-xl p-4">
-                          {birthday.fullname} - {DEPARTMENTS.find((dpt,index)=> dpt.id == birthday.department )?.value || "N/A"}
+                          {birthday.fullname} - {DEPARTMENTS.find((dpt, index) => dpt.id == birthday.department)?.value || "N/A"}
                         </div>
                       ))
                     ) : (
@@ -484,17 +503,17 @@ const EmployeeDashboard = () => {
                   }
                 </div>
               </div>
-               <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="bg-white rounded-2xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">
-                 🚪 Who's on Leave Today
+                  🚪 Who's on Leave Today
                 </h3>
 
                 <div className="space-y-3">
-                 {
+                  {
                     userData?.leave_today?.length > 0 ? (
                       userData.leave_today?.map((leave) => (
                         <div key={leave.id} className="bg-slate-50 rounded-xl p-4">
-                          {leave.fullname} - {DEPARTMENTS.find((dpt,index)=> dpt.id == leave.department )?.value || "N/A"}
+                          {leave.fullname} - {DEPARTMENTS.find((dpt, index) => dpt.id == leave.department)?.value || "N/A"}
                         </div>
                       ))
                     ) : (
@@ -504,7 +523,7 @@ const EmployeeDashboard = () => {
                     )
                   }
 
-                  
+
                 </div>
               </div>
               {/* <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -547,7 +566,7 @@ const EmployeeDashboard = () => {
                 </p>
 
                 <p className="text-slate-400 text-sm mt-1">
-                  {userData?.emp_code} 
+                  {userData?.emp_code}
                   {/* | Engineering */}
                 </p>
               </div>
@@ -618,7 +637,7 @@ const EmployeeDashboard = () => {
 
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-sm text-slate-500">Department</p>
-                  <p className="font-medium">{DEPARTMENTS.find((dpt,index)=> dpt.id == userData?.employee?.department)?.value || '-'}</p>
+                  <p className="font-medium">{DEPARTMENTS.find((dpt, index) => dpt.id == userData?.employee?.department)?.value || '-'}</p>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl">
@@ -678,26 +697,26 @@ const EmployeeDashboard = () => {
 
             {/* BUTTONS */}
             <div className="flex flex-wrap gap-4">
-              <button style={{cursor:'pointer'}}
+              <button style={{ cursor: 'pointer' }}
                 onClick={() => openPopup("leave")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply Leave
               </button>
 
-              <button style={{cursor:'pointer'}}
+              <button style={{ cursor: 'pointer' }}
                 onClick={() => openPopup("wfh")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply WFH
               </button>
-              <button style={{cursor:'pointer'}}
+              <button style={{ cursor: 'pointer' }}
                 onClick={() => openPopup("reimbursement")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
                 + Apply For Reimbursement
               </button>
-              <button style={{cursor:'pointer'}}
+              <button style={{ cursor: 'pointer' }}
                 onClick={() => openPopup("compOff")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
               >
@@ -1027,42 +1046,42 @@ const EmployeeDashboard = () => {
 
         {/* ================= TEAM ================= */}
         {activeTab === "team" && (
-  <div>
-    <h2 className="text-2xl font-bold mb-6">
-      { teammembers.length && teammembers[0].id  ? "My Team" : ""} 
-    </h2>
+          <div>
+            <h2 className="text-2xl font-bold mb-6">
+              {teammembers.length && teammembers[0].id ? "My Team" : ""}
+            </h2>
 
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      { teammembers.length && teammembers[0].id ?  teammembers?.map((member) => (
-        <div
-          key={member.id}
-          className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"
-          onClick={() => {
-            navigate(`/employee-details/${member.user_id}`);
-          }}
-        >
-          <div className="flex flex-col items-center text-center">
-            <img
-              src={
-                member.gender === "Male"
-                  ? "https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
-                  : member.gender === "Female"
-                  ? "https://cdn-icons-png.flaticon.com/512/4140/4140062.png"
-                  : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-              }
-              alt={member.fullname}
-              className="w-20 h-20 rounded-full mb-4"
-            />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teammembers.length && teammembers[0].id ? teammembers?.map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all cursor-pointer"
+                  onClick={() => {
+                    navigate(`/employee-details/${member.user_id}`);
+                  }}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <img
+                      src={
+                        member.gender === "Male"
+                          ? "https://cdn-icons-png.flaticon.com/512/4140/4140061.png"
+                          : member.gender === "Female"
+                            ? "https://cdn-icons-png.flaticon.com/512/4140/4140062.png"
+                            : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                      }
+                      alt={member.fullname}
+                      className="w-20 h-20 rounded-full mb-4"
+                    />
 
-            <h3 className="font-bold text-lg text-slate-800">
-              {member.fullname}
-            </h3>
+                    <h3 className="font-bold text-lg text-slate-800">
+                      {member.fullname}
+                    </h3>
 
-            <p className="text-slate-500 mb-3">
-              {member.position}
-            </p>
+                    <p className="text-slate-500 mb-3">
+                      {member.position}
+                    </p>
 
-            {/* <div className="text-sm text-slate-600 space-y-1">
+                    {/* <div className="text-sm text-slate-600 space-y-1">
               <p>
                 <span className="font-semibold">DOB:</span>{" "}
                 {member.dob
@@ -1077,12 +1096,12 @@ const EmployeeDashboard = () => {
                   : "-"}
               </p>
             </div> */}
+                  </div>
+                </div>
+              )) : <h2 className="text-2xl font-bold mb-6">No team members to display.</h2>}
+            </div>
           </div>
-        </div>
-      )) :      <h2 className="text-2xl font-bold mb-6">No team members to display.</h2>}
-    </div>
-  </div>
-)}
+        )}
       </div>
 
       {/* ================= POPUP ================= */}
@@ -1292,6 +1311,37 @@ const EmployeeDashboard = () => {
                 />
               </div>
 
+              <div>
+                <label className="block mb-2 font-medium">
+                  Upload Bill
+                </label>
+
+                <label
+                  htmlFor="billFile"
+                  className="inline-block cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  {billFile ? "Change File" : "Choose File"}
+                </label>
+
+                <input
+                  id="billFile"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
+                  onChange={(e) =>
+                    setBillFile(
+                      e.target.files?.[0] || null
+                    )
+                  }
+                  className="hidden"
+                  required={!billFile}
+                />
+
+                <p className="mt-2 text-sm text-gray-600">
+                  {billFile
+                    ? billFile.name
+                    : "No file chosen"}
+                </p>
+              </div>
               <div className="flex gap-4 pt-3">
                 <button
                   type="submit"

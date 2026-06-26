@@ -357,7 +357,7 @@ const EmployeeOnboarding = () => {
 
 
         navigate(
-            `/view-employee?email=${employee.email}`
+            `/view-employee?empcode=${employee.emp_code}`
         );
     };
 

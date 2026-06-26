@@ -15,8 +15,9 @@ import Leave from './Leave/Leave'
 import PublicRoute from './components/Routemanager/PublicRoute'
 import PrivateRoute from './components/Routemanager/PrivateRoute'
 import EmployeeDetails from './EmployeeDetails/EmployeeDetails'
+import AutoLogoutWrapper from './components/AutoLogoutWrapper/AutoLogoutWrapper'
 function App() {
-
+  
   let path = window.location.pathname.slice(1);
   console.log(path, 'path')
   useEffect(() => {
@@ -30,7 +31,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
-
+         <AutoLogoutWrapper />
         <Routes>
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
